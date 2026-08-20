@@ -310,6 +310,9 @@ def admin_config_view(request):
             contacto_emergencia = data.get('contacto_emergencia')
             jefe_asignado_id = data.get('jefe_asignado')
             
+            if cedula == '999999999' and rol != 'ADMINISTRADOR':
+                return JsonResponse({'success': False, 'message': 'El superadministrador (999999999) no puede cambiar su rol a otro diferente de Administrador.'})
+            
             try:
                 colab = Colaborador.objects.get(cedula=cedula)
                 
