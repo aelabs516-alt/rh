@@ -37,44 +37,7 @@ def disciplinario_view(request):
     colaboradores = Colaborador.objects.all()
     registros = RegistroAsistencia.objects.select_related('colaborador').all()
     
-    actas_data = []
-    for a in actas:
-        actas_data.append({
-            'id_acta': a.id,
-            'cedula_colaborador': a.colaborador.cedula,
-            'nombre_colaborador': a.colaborador.nombre,
-            'fecha_emision': str(a.fecha),
-            'tipo_falta': a.gravedad,
-            'decision': a.descripcion,
-            'semana_relacionada': a.semana_relacionada,
-            'anio_relacionado': a.anio_relacionado,
-            'estado_acta': 'CONCLUIDA' if a.archivo_adjunto else 'PENDIENTE_FIRMA',
-            'descargos_colaborador': '',
-        })
-    
-    colabs_data = []
-    for c in colaboradores:
-        colabs_data.append({
-            'cedula': c.cedula,
-            'nombre': c.nombre,
-            'rol': c.rol,
-        })
-    
-    registros_data = []
-    for r in registros:
-        registros_data.append({
-            'cedula_colaborador': r.colaborador.cedula,
-            'fecha': str(r.fecha),
-            'hora_ingreso': str(r.hora_ingreso) if r.hora_ingreso else '',
-            'estado_ingreso': r.estado_ingreso,
-            'semana_calendario': r.fecha.isocalendar()[1]
-        })
-    
-        'sesion_activa': {
-            'rol': request.session.get('rol', 'COLABORADOR'),
-            'cedula': request.session.get('cedula', None)
-        }
-    })
+
     
     return render(request, 'rrhh/disciplinario.html', {
         'actas': actas, 
