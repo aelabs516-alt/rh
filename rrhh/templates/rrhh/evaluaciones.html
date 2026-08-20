@@ -238,10 +238,6 @@
 
 {% block extra_js %}
 <script>
-    window.DJANGO_COLABORADORES_DATA = {{ colaboradores_json|safe }};
-    window.DJANGO_EVALUACIONES_DATA = {{ evaluaciones_json|safe }};
-    window.obtenerColaboradores = function() { return window.DJANGO_COLABORADORES_DATA || []; };
-    window.obtenerEvaluaciones = function() { return window.DJANGO_EVALUACIONES_DATA || []; };
 </script>
 <script src="{% static 'js/evaluations.js' %}?v=6"></script>
 <script>

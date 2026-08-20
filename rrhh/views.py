@@ -33,9 +33,9 @@ def disciplinario_view(request):
             except Exception as e:
                 return JsonResponse({'success': False, 'message': str(e)})
 
-    actas = ActaDisciplinaria.objects.all().order_by('-fecha')
+    actas = ActaDisciplinaria.objects.select_related('colaborador').all().order_by('-fecha')
     colaboradores = Colaborador.objects.all()
-    registros = RegistroAsistencia.objects.all()
+    registros = RegistroAsistencia.objects.select_related('colaborador').all()
     
     actas_data = []
     for a in actas:
@@ -51,7 +51,6 @@ def disciplinario_view(request):
             'estado_acta': 'CONCLUIDA' if a.archivo_adjunto else 'PENDIENTE_FIRMA',
             'descargos_colaborador': '',
         })
-    actas_json = json.dumps(actas_data)
     
     colabs_data = []
     for c in colaboradores:
@@ -60,7 +59,6 @@ def disciplinario_view(request):
             'nombre': c.nombre,
             'rol': c.rol,
         })
-    colaboradores_json = json.dumps(colabs_data)
     
     registros_data = []
     for r in registros:
@@ -71,9 +69,7 @@ def disciplinario_view(request):
             'estado_ingreso': r.estado_ingreso,
             'semana_calendario': r.fecha.isocalendar()[1]
         })
-    registros_json = json.dumps(registros_data)
     
-    config_json = json.dumps({
         'sesion_activa': {
             'rol': request.session.get('rol', 'COLABORADOR'),
             'cedula': request.session.get('cedula', None)
@@ -83,10 +79,6 @@ def disciplinario_view(request):
     return render(request, 'rrhh/disciplinario.html', {
         'actas': actas, 
         'colaboradores': colaboradores,
-        'actas_json': actas_json,
-        'colaboradores_json': colaboradores_json,
-        'registros_json': registros_json,
-        'config_json': config_json
     })
 
 @login_required_custom
@@ -109,7 +101,7 @@ def evaluaciones_view(request):
             except Exception as e:
                 return JsonResponse({'success': False, 'message': str(e)})
 
-    evaluaciones = Evaluacion.objects.all().order_by('-fecha_evaluacion')
+    evaluaciones = Evaluacion.objects.select_related('colaborador').all().order_by('-fecha_evaluacion')
     colaboradores = Colaborador.objects.all()
     
     eval_data = []
@@ -124,7 +116,6 @@ def evaluaciones_view(request):
             'feedback_jefe': e.feedback,
             'estado': 'COMPLETADA'
         })
-    evaluaciones_json = json.dumps(eval_data)
     
     colabs_data = []
     for c in colaboradores:
@@ -133,13 +124,10 @@ def evaluaciones_view(request):
             'nombre': c.nombre,
             'rol': c.rol,
         })
-    colaboradores_json = json.dumps(colabs_data)
     
     return render(request, 'rrhh/evaluaciones.html', {
         'evaluaciones': evaluaciones, 
         'colaboradores': colaboradores,
-        'evaluaciones_json': evaluaciones_json,
-        'colaboradores_json': colaboradores_json
     })
 
 @login_required_custom
@@ -173,7 +161,7 @@ def documentos_view(request):
             except Exception as e:
                 return JsonResponse({'success': False, 'message': str(e)})
 
-    documentos = DocumentoColaborador.objects.all().order_by('-fecha_carga')
+    documentos = DocumentoColaborador.objects.select_related('colaborador').all().order_by('-fecha_carga')
     colaboradores = Colaborador.objects.all()
     return render(request, 'rrhh/documentos.html', {'documentos': documentos, 'colaboradores': colaboradores})
 

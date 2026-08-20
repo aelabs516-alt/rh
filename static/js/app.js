@@ -1,7 +1,7 @@
 // js/app.js
 // Controlador central de navegación SPA, reloj, tema e inicialización de la app
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('turbo:load', () => {
     // 1. Reloj y Fecha Dinámicos (Bogotá/Medellín)
     iniciarRelojYFecha();
 
@@ -571,3 +571,37 @@ window.getCookie = function(name) {
     }
     return cookieValue;
 };
+
+document.addEventListener('turbo:load', async () => {
+    if (typeof window.obtenerDatosCompletos === 'function') {
+        await window.obtenerDatosCompletos();
+    }
+    
+    if (document.getElementById('filter-colaborador') && typeof inicializarDashboard === 'function') {
+        inicializarDashboard();
+    }
+    if (document.getElementById('admin-filtro-estado') && typeof inicializarAdmin === 'function') {
+        inicializarAdmin();
+    }
+    if (document.getElementById('form-gestion-colaborador') && typeof inicializarCreation === 'function') {
+        inicializarCreation();
+    }
+    if (document.getElementById('btn-registrar-entrada') && typeof inicializarQR === 'function') {
+        inicializarQR();
+    }
+    if (document.getElementById('btn-solicitar-permiso') && typeof inicializarRequests === 'function') {
+        inicializarRequests();
+    }
+    if (document.getElementById('filter-fecha-inicio') && typeof inicializarDisciplinary === 'function') {
+        inicializarDisciplinary();
+    }
+    if (document.getElementById('btn-generar-colilla') && typeof inicializarPayroll === 'function') {
+        inicializarPayroll();
+    }
+    if (document.getElementById('filter-evaluaciones-colaborador') && typeof inicializarEvaluations === 'function') {
+        inicializarEvaluations();
+    }
+    if (document.getElementById('btn-generar-certificado') && typeof inicializarCertificates === 'function') {
+        inicializarCertificates();
+    }
+});

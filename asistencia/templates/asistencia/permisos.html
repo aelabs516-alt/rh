@@ -181,13 +181,7 @@
 
 {% block extra_js %}
 <script>
-    window.DJANGO_COLABORADORES_DATA = {{ colaboradores_json|safe }};
-    window.DJANGO_PERMISOS_DATA = {{ permisos_json|safe }};
-    window.obtenerColaboradorPorCedula = function(cedula) {
-        return window.DJANGO_COLABORADORES_DATA.find(c => c.cedula == cedula);
     };
-    window.obtenerSolicitudes = function() {
-        return window.DJANGO_PERMISOS_DATA || [];
     };
 </script>
 <script src="{% static 'js/requests.js' %}?v=18"></script>

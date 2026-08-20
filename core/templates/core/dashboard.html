@@ -233,28 +233,13 @@
             
 {% block extra_js %}
 <script>
-    window.DJANGO_REGISTROS_DATA = {{ registros_json|safe }};
-    window.DJANGO_COLABORADORES_DATA = {{ colaboradores_json|safe }};
-    window.DJANGO_ACTAS_DATA = {{ actas_json|safe }};
-    window.DJANGO_EVALUACIONES_DATA = {{ evaluaciones_json|safe }};
     
     // Override db.js getters for Dashboard use
-    window.obtenerRegistros = function() {
-        return window.DJANGO_REGISTROS_DATA || [];
     };
-    window.obtenerColaboradores = function() {
-        return window.DJANGO_COLABORADORES_DATA || [];
     };
-    window.obtenerColaboradorPorCedula = function(cedula) {
-        return window.obtenerColaboradores().find(c => c.cedula == cedula);
     };
-    window.obtenerActas = function() {
-        return window.DJANGO_ACTAS_DATA || [];
     };
-    window.obtenerEvaluaciones = function() {
-        return window.DJANGO_EVALUACIONES_DATA || [];
     };
-    window.obtenerConfiguracion = function() {
         return {
             sesion_activa: {
                 rol: "{{ request.session.rol }}",

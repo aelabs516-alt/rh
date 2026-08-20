@@ -14,7 +14,31 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <!-- Scripts Globales -->
     <script src="{% static 'js/db.js' %}?v=5"></script>
+    <script>
+        window.obtenerDatosCompletos = async function() {
+            if (window.DJANGO_DATOS_CARGADOS) return;
+            const res = await fetch("{% url 'api_data' %}");
+            const data = await res.json();
+            window.DJANGO_COLABORADORES_DATA = data.colaboradores;
+            window.DJANGO_REGISTROS_DATA = data.registros;
+            window.DJANGO_ACTAS_DATA = data.actas;
+            window.DJANGO_EVALUACIONES_DATA = data.evaluaciones;
+            window.vacaciones_admin_json = data.vacaciones_admin;
+            window.DJANGO_CONFIG_DATA = data.configuracion;
+            window.DJANGO_PERMISOS_DATA = data.permisos;
+            window.DJANGO_DATOS_CARGADOS = true;
+        };
+        // Sobrescribir funciones de db.js para usar los datos globales
+        window.obtenerColaboradores = function() { return window.DJANGO_COLABORADORES_DATA || []; };
+        window.obtenerRegistros = function() { return window.DJANGO_REGISTROS_DATA || []; };
+        window.obtenerActas = function() { return window.DJANGO_ACTAS_DATA || []; };
+        window.obtenerEvaluaciones = function() { return window.DJANGO_EVALUACIONES_DATA || []; };
+        window.obtenerPermisos = function() { return window.DJANGO_PERMISOS_DATA || []; };
+        window.obtenerConfiguracion = function() { return window.DJANGO_CONFIG_DATA || {}; };
+    </script>
     <script src="{% static 'js/app.js' %}?v=5"></script>
+    <!-- Hotwire Turbo -->
+    <script type="module" src="https://cdn.skypack.dev/@hotwired/turbo"></script>
 </head>
 <body>
 

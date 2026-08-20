@@ -19,7 +19,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from core.views import home, login_view, admin_config_view, logout_view
+from core.views import home, login_view, admin_config_view, logout_view, global_data_api
 from core.secure_media import secure_media_view
 from asistencia.views import qr_scan_view, manual_view, permisos_view
 from rrhh.views import disciplinario_view, evaluaciones_view, documentos_view, certificados_view, generar_pdf_view
@@ -33,6 +33,7 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('dashboard/', home, name='dashboard'),
     path('config/', admin_config_view, name='admin_config'),
+    path('api/global-data/', global_data_api, name='api_data'),
     
     # Asistencia
     path('qr/', qr_scan_view, name='asistencia_qr'),

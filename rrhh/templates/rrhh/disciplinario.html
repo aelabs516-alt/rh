@@ -272,15 +272,7 @@
 
 {% block extra_js %}
 <script>
-    window.DJANGO_COLABORADORES_DATA = {{ colaboradores_json|safe }};
-    window.DJANGO_ACTAS_DATA = {{ actas_json|safe }};
-    window.DJANGO_REGISTROS_DATA = {{ registros_json|safe }};
-    window.DJANGO_CONFIG_DATA = {{ config_json|safe }};
     
-    window.obtenerColaboradores = function() { return window.DJANGO_COLABORADORES_DATA || []; };
-    window.obtenerActas = function() { return window.DJANGO_ACTAS_DATA || []; };
-    window.obtenerRegistros = function() { return window.DJANGO_REGISTROS_DATA || []; };
-    window.obtenerConfiguracion = function() { return window.DJANGO_CONFIG_DATA || {}; };
 </script>
 <script src="{% static 'js/disciplinary.js' %}?v=11"></script>
 <script>

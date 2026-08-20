@@ -133,7 +133,7 @@ def manual_view(request):
             except Exception as e:
                 return JsonResponse({'success': False, 'message': str(e)})
 
-    registros = RegistroAsistencia.objects.all().order_by('-fecha', '-id')
+    registros = RegistroAsistencia.objects.select_related('colaborador').all().order_by('-fecha', '-id')
     colaboradores = Colaborador.objects.all()
     return render(request, 'asistencia/manual.html', {'registros': registros, 'colaboradores': colaboradores})
 
@@ -179,7 +179,7 @@ def permisos_view(request):
             except Exception as e:
                 return JsonResponse({'success': False, 'message': str(e)})
 
-    permisos = SolicitudPermiso.objects.all().order_by('-id')
+    permisos = SolicitudPermiso.objects.select_related('colaborador').all().order_by('-id')
     colaboradores = Colaborador.objects.all()
     
     colabs_data = []
@@ -189,7 +189,6 @@ def permisos_view(request):
             'nombre': c.nombre,
             'numero_contacto': c.numero_contacto or 'No registrado'
         })
-    colaboradores_json = json.dumps(colabs_data)
     
     permisos_data = []
     for p in permisos:
@@ -206,7 +205,5 @@ def permisos_view(request):
             'observaciones': p.motivo,
             'estado': p.estado
         })
-    permisos_json = json.dumps(permisos_data)
     
-    return render(request, 'asistencia/permisos.html', {'permisos': permisos, 'colaboradores': colaboradores, 'colaboradores_json': colaboradores_json, 'permisos_json': permisos_json})
 

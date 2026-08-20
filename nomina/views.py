@@ -39,6 +39,6 @@ def colillas_view(request):
             except Exception as e:
                 return JsonResponse({'success': False, 'message': str(e)})
 
-    colillas = ColillaPago.objects.all().order_by('-fecha_subida')
+    colillas = ColillaPago.objects.select_related('colaborador').all().order_by('-fecha_subida')
     colaboradores = Colaborador.objects.all()
     return render(request, 'nomina/colillas.html', {'colillas': colillas, 'colaboradores': colaboradores})
