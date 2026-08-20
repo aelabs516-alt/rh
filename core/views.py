@@ -474,17 +474,12 @@ def global_data_api(request):
             'estado_evaluacion': 'COMPLETADA'
         })
         
-    # Config
-    from rrhh.models import ConfiguracionSistema
-    config = ConfiguracionSistema.objects.first()
-    config_data = {}
-    if config:
-        config_data = {
-            'horas_llegada_tarde': config.horas_llegada_tarde,
-            'dias_ausencia_injustificada': config.dias_ausencia_injustificada,
-            'salidas_tempranas': config.salidas_tempranas,
-            'dias_descanso_semanal': config.dias_descanso_semanal,
+    config_data = {
+        'sesion_activa': {
+            'rol': rol,
+            'cedula': cedula
         }
+    }
         
     # Permisos
     permisos = SolicitudPermiso.objects.select_related('colaborador').all()
