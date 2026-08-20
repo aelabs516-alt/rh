@@ -6,6 +6,9 @@ from django.views.decorators.csrf import csrf_exempt
 from asistencia.models import RegistroAsistencia, SolicitudPermiso, Colaborador
 from rrhh.models import ActaDisciplinaria, Evaluacion
 from django.db.models import Sum
+import holidays
+from datetime import timedelta
+from django.utils import timezone
 
 from django.shortcuts import redirect
 from functools import wraps
@@ -56,11 +59,6 @@ def logout_view(request):
 
 @login_required_custom
 def home(request):
-    import holidays
-    from datetime import timedelta
-    from django.utils import timezone
-    from asistencia.models import SolicitudPermiso
-
     rol = request.session.get('rol')
     cedula = request.session.get('cedula')
     
@@ -109,7 +107,6 @@ def home(request):
         actas_pendientes = ActaDisciplinaria.objects.count()
         
         # Calcular vacaciones para todos los colaboradores (Gráfico Admin)
-        import json
         vacaciones_admin_data = []
         now = timezone.localtime(timezone.now()).date()
         todos_colabs = Colaborador.objects.all()
