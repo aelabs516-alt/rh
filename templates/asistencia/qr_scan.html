@@ -1,0 +1,87 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block page_title %}Ingreso y Salida{% endblock %}
+{% block content %}
+<section id="view-qr" class="page">
+    <div style="max-width: 500px; margin: 0 auto;" class="qr-grid">
+        <div class="glass-card" style="border: 2px solid var(--card-border); border-radius: 30px; padding: 24px; position:relative; overflow:hidden;">
+            <!-- Muesca de Celular Virtual (Notch) -->
+            <div style="width: 140px; height: 20px; background-color: var(--text-primary); margin: -25px auto 25px auto; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;"></div>
+            
+            <div style="text-align:center; margin-bottom: 20px;">
+                <div class="badge badge-info" style="font-size: 0.7rem; margin-bottom:8px;">Simulador de Escaneo Móvil</div>
+                <h4 style="font-size: 1.1rem; font-weight:600;">Pantalla de Marcación</h4>
+                <p style="color:var(--text-secondary); font-size:0.75rem;">Simula el ingreso de datos al escanear el código QR.</p>
+            </div>
+
+            <form id="form-scan-colaborador" style="display:flex; flex-direction:column; gap:16px;">
+                
+                <div class="camera-container" style="position: relative; width: 100%; max-width: 300px; margin: 0 auto; border-radius: var(--radius-md); overflow: hidden; background-color: #000; box-shadow: var(--shadow-md); height: 250px; display: flex; align-items: center; justify-content: center;">
+                    <div style="color: rgba(255,255,255,0.8); font-size: 0.85rem; font-weight: 600; text-align: center;">
+                        <svg style="width:48px; height:48px; margin:0 auto 10px auto;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                        <br>Simulación de Cámara QR
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="scan-cedula">Datos Extraídos del QR (Cédula)</label>
+                    <input type="number" id="scan-cedula" class="form-control" placeholder="Ej: 123456789" required style="font-size: 1.5rem; height: 50px; text-align: center; letter-spacing: 2px;" {% if request.session.rol == 'COLABORADOR' %}value="{{ request.session.cedula }}" readonly style="opacity: 0.7;"{% endif %}>
+                    
+                    <label for="scan-tipo" style="margin-top:10px;">Tipo de Marcación</label>
+                    <select id="scan-tipo" class="form-control" style="font-size: 1.2rem; height: 50px; text-align: center;">
+                        <option value="INGRESO">INGRESO</option>
+                        <option value="SALIDA">SALIDA</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="height: 50px; font-size:1.1rem; margin-top: 10px; font-weight: bold;">
+                    Registrar Asistencia
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('form-scan-colaborador');
+    if(form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cedula = document.getElementById('scan-cedula').value;
+            const tipo = document.getElementById('scan-tipo').value;
+            
+            try {
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : (document.cookie.match(/csrftoken=([^;]+)/) || [])[1];
+                const response = await fetch('{% url "asistencia_qr" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        tipo: tipo,
+                        cedula: cedula
+                    })
+                });
+                const result = await response.json();
+                if(result.success) {
+                    alert(result.message);
+                    {% if request.session.rol != 'COLABORADOR' %}
+                    form.reset();
+                    {% endif %}
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch(error) {
+                alert('Error de red: ' + error);
+            }
+        });
+    }
+});
+</script>
+
+{% block extra_js %}
+<script src="{% static 'js/qr.js' %}?v=4"></script>
+{% endblock extra_js %}
+{% endblock %}

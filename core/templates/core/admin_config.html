@@ -1,0 +1,429 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block page_title %}Personal y Horarios{% endblock %}
+{% block content %}
+<section id="view-creation" class="page">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" class="creation-grid">
+                    
+                    <!-- Formulario de Colaborador -->
+                    <div class="glass-card">
+                        <div class="card-title" id="colaborador-form-title">
+                            <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            <span>Crear Nuevo Colaborador</span>
+                        </div>
+                        <form id="form-colaborador">
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-cedula">Cédula (Identificación)</label>
+                                    <input type="number" id="colab-cedula" placeholder="Ej: 10203040" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-nombre">Nombre Completo</label>
+                                    <input type="text" id="colab-nombre" placeholder="Ej: Juan Pérez" required>
+                                </div>
+                            </div>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-cargo">Cargo (Puesto de Trabajo)</label>
+                                    <input type="text" id="colab-cargo" placeholder="Ej: Analista de TI" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-area">Área (Departamento)</label>
+                                    <input type="text" id="colab-area" placeholder="Ej: Tecnología" required>
+                                </div>
+                            </div>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-fecha-nacimiento">Fecha de Nacimiento</label>
+                                    <input type="date" id="colab-fecha-nacimiento" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-numero-contacto">Número Contacto Colaborador</label>
+                                    <input type="text" id="colab-numero-contacto" placeholder="Ej: 3001234567">
+                                </div>
+                            </div>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-fecha-ingreso">Fecha de Ingreso</label>
+                                    <input type="date" id="colab-fecha-ingreso" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-tipo-contrato">Tipo de Contrato</label>
+                                    <select id="colab-tipo-contrato" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;" required>
+                                        <option value="Término Fijo">Término Fijo</option>
+                                        <option value="Indefinido" selected>Indefinido</option>
+                                        <option value="Obra/Labor">Obra/Labor</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-salario-base">Salario Base ($)</label>
+                                    <input type="text" id="colab-salario-base" placeholder="Ej: 3.200.000" oninput="this.value = this.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')" required>
+                                </div>
+                            </div>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-estado">Estado Expediente</label>
+                                    <select id="colab-estado" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;" required>
+                                        <option value="ACTIVO" selected>ACTIVO</option>
+                                        <option value="INACTIVO">INACTIVO</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-rol">Tipo de Perfil</label>
+                                    <select id="colab-rol" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;" required>
+                                        <option value="COLABORADOR" selected>Colaborador (Planta/Horarios)</option>
+                                        <option value="JEFE_INMEDIATO">Jefe Inmediato (Admin Global)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Contactos de Emergencia (Sección Reorganizada al Final) -->
+                            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--sidebar-border);">
+                                <h4 style="margin-bottom: 16px; color: var(--accent); font-size: 1rem;">Contacto de Emergencia</h4>
+                                <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                    <div class="form-group">
+                                        <label for="colab-nombre-emergencia">Nombre contacto Emergencia</label>
+                                        <input type="text" id="colab-nombre-emergencia" placeholder="Ej: Mamá, Esposa..." required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="colab-telefono-emergencia">Teléfono Emergencia</label>
+                                        <input type="text" id="colab-telefono-emergencia" placeholder="Solo números" maxlength="14" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-grid" style="grid-template-columns: 1fr; margin-bottom: 16px;">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="colab-contrasena">Contraseña de Acceso <span style="color: var(--danger);">*</span></label>
+                                    <input type="password" id="colab-contrasena" placeholder="Ingrese contraseña para inicio de sesión" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;" required>
+                                </div>
+                            </div>
+                            
+                            <!-- Sección exclusiva de Colaboradores -->
+                            <div id="colab-only-section">
+                                <div class="form-group" style="margin-bottom: 16px;">
+                                    <label for="colab-jefe-asignado">Jefe Inmediato Responsable</label>
+                                    <select id="colab-jefe-asignado" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;">
+                                        <!-- Cargado dinámicamente -->
+                                    </select>
+                                </div>
+                                <div class="form-group full-width" style="margin-bottom: 24px;">
+                                    <label style="margin-bottom: 8px; display: block;">Matriz Dinámica de Turnos Múltiples</label>
+                                    <div id="colab-matrix-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+                                        <!-- Las filas de turnos se inyectan dinámicamente -->
+                                    </div>
+                                    <button type="button" class="btn btn-secondary" id="btn-add-matrix-line" style="font-size: 0.8rem; padding: 8px 16px; align-self: flex-start; display: flex; align-items: center; gap: 6px;">
+                                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        Añadir Asignación de Turno
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Repositorio Documental (Expediente Digital, visible en edición) -->
+                            <div id="colab-expediente-digital-container" style="margin-top: 24px; border-top: 1px solid var(--sidebar-border); padding-top: 20px; display: none;">
+                                <label style="font-weight: 700; margin-bottom: 12px; display: block; color: var(--accent);">Expediente Digital (Documentos PDF/Image)</label>
+                                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+                                    <div style="background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:6px;">Cargar Documento de Identidad (PDF/Image)</label>
+                                        <input type="file" id="doc-file-identidad" accept=".pdf,image/*">
+                                    </div>
+                                    <div style="background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:6px;">Cargar Contrato Firmado (PDF/Image)</label>
+                                        <input type="file" id="doc-file-contrato" accept=".pdf,image/*">
+                                    </div>
+                                    <div style="background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:6px;">Cargar Exámenes Médicos (PDF/Image)</label>
+                                        <input type="file" id="doc-file-examenes" accept=".pdf,image/*">
+                                    </div>
+                                    <div style="background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:6px;">Cargar Certificaciones (PDF/Image)</label>
+                                        <input type="file" id="doc-file-certificaciones" accept=".pdf,image/*">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 15px;">
+                                    <label style="font-weight: 600; font-size: 0.8rem; display: block; margin-bottom: 8px;">Documentos en el Expediente:</label>
+                                    <div class="table-wrapper">
+                                        <table style="font-size: 0.8rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tipo de Documento</th>
+                                                    <th>Nombre de Archivo</th>
+                                                    <th>Acción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="table-colab-docs-body">
+                                                <!-- Inyectado dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección exclusiva de Jefes -->
+                            <div id="jefe-only-section" style="display: none; margin-bottom: 24px;">
+                                <label style="font-weight: 600; margin-bottom: 8px; display: block;">Firma Digital del Jefe Inmediato <span style="color: var(--danger);">*</span></label>
+                                <div style="position: relative; width: 100%; max-width: 350px; height: 130px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: var(--bg-primary); overflow: hidden; cursor: crosshair; margin-bottom: 8px;">
+                                    <canvas id="jefe-creation-canvas" width="350" height="130" style="display: block; width: 100%; height: 100%;"></canvas>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" class="btn btn-secondary" id="btn-clear-jefe-canvas" style="font-size: 0.75rem; padding: 6px 12px;">Limpiar Firma</button>
+                                    <button type="button" class="btn btn-secondary" id="btn-upload-jefe-signature" style="font-size: 0.75rem; padding: 6px 12px; display: flex; align-items: center; gap: 4px;">
+                                        <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                        Cargar Imagen
+                                    </button>
+                                    <input type="file" id="jefe-signature-file" accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-colab" style="display:none;">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Guardar Colaborador</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Formulario de Horarios / Turnos -->
+                    <div class="glass-card">
+                        <div class="card-title" id="horario-form-title">
+                            <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            <span>Configurar Horarios / Turnos</span>
+                        </div>
+                        <form id="form-horario">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="shift-codigo">Código del Turno (Alfanumérico)</label>
+                                <input type="text" id="shift-codigo" placeholder="Ej: DIU, NOC, M8-17" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="shift-nombre">Nombre Descriptivo</label>
+                                <input type="text" id="shift-nombre" placeholder="Ej: Diurno Administrativo" required>
+                            </div>
+                            <div class="form-grid" style="margin-bottom: 24px;">
+                                <div class="form-group">
+                                    <label for="shift-inicio">Hora de Entrada (Ingreso)</label>
+                                    <input type="time" id="shift-inicio" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="shift-fin">Hora de Salida</label>
+                                    <input type="time" id="shift-fin" required>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-shift" style="display:none;">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Guardar Horario</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- Tabla de Personal Registrado -->
+                <div class="glass-card">
+                    <div class="card-title">Listado de Colaboradores</div>
+                    <div class="table-wrapper">
+                        <table>
+                             <thead>
+                                 <tr>
+                                     <th>Cédula</th>
+                                     <th>Nombre del Colaborador</th>
+                                     <th>Cargo / Área</th>
+                                     <th>Perfil / Rol</th>
+                                     <th>Horarios Asignados / Jefe Responsable</th>
+                                     <th>Acciones</th>
+                                 </tr>
+                             </thead>
+                            <tbody id="table-colaboradores-body">
+                                {% for colab in colaboradores %}
+                                <tr>
+                                    <td>{{ colab.cedula }}</td>
+                                    <td>{{ colab.nombre }}</td>
+                                    <td>N/A</td>
+                                    <td>
+                                        <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size:0.75rem; font-weight:600; 
+                                        background-color: {% if colab.rol == 'ADMINISTRADOR' %}var(--danger-light){% else %}var(--accent-light){% endif %}; 
+                                        color: {% if colab.rol == 'ADMINISTRADOR' %}var(--danger){% else %}var(--accent){% endif %};">
+                                            {{ colab.rol }}
+                                        </span>
+                                    </td>
+                                    <td>Sin turnos asignados</td>
+                                    <td style="display: flex; gap: 5px;">
+                                        <button class="btn btn-secondary btn-editar-colaborador" style="padding: 4px 8px; font-size:0.75rem;" data-cedula="{{ colab.cedula }}" data-nombre="{{ colab.nombre }}" data-rol="{{ colab.rol }}" data-estado="{{ colab.estado }}" data-contacto="{{ colab.numero_contacto|default_if_none:'' }}" data-cargo="{{ colab.cargo|default_if_none:'' }}" data-area="{{ colab.area|default_if_none:'' }}" data-fecha-ingreso="{{ colab.fecha_ingreso|date:'Y-m-d'|default_if_none:'' }}" data-fecha-nacimiento="{{ colab.fecha_nacimiento|date:'Y-m-d'|default_if_none:'' }}" data-tipo-contrato="{{ colab.tipo_contrato|default_if_none:'' }}" data-salario-base="{{ colab.salario_base|default_if_none:'' }}" data-contacto-emergencia="{{ colab.contacto_emergencia|default_if_none:'' }}" data-jefe-asignado="{{ colab.jefe_asignado.id|default_if_none:'' }}">Editar</button>
+                                        <button class="btn btn-danger btn-borrar-colaborador" style="padding: 4px 8px; font-size:0.75rem;" data-cedula="{{ colab.cedula }}" data-nombre="{{ colab.nombre }}">Borrar</button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                                        No hay colaboradores registrados en la base de datos.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tabla de Horarios Registrados -->
+                <div class="glass-card" style="margin-bottom: 0;">
+                    <div class="card-title">Turnos / Horarios Definidos</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th>Rango Horario</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-horarios-body">
+                                <!-- Cargado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const formColaborador = document.getElementById('form-colaborador');
+                if (formColaborador) {
+                    formColaborador.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        
+                        const payload = {
+                            accion: 'crear_colaborador',
+                            cedula: document.getElementById('colab-cedula').value,
+                            nombre: document.getElementById('colab-nombre').value,
+                            rol: document.getElementById('colab-rol').value
+                        };
+                        
+                        try {
+                            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : getCookie('csrftoken');
+                            const response = await fetch('{% url "admin_config" %}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                body: JSON.stringify(payload)
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                alert(result.message);
+                                window.location.reload();
+                            } else {
+                                alert('Error: ' + result.message);
+                            }
+                        } catch (error) {
+                            alert('Error de red: ' + error);
+                        }
+                    });
+                }
+            });
+            </script>
+            
+{% block extra_js %}
+<script src="{% static 'js/creation.js' %}?v=11"></script>
+<script>
+(function waitForCreation() {
+    if (typeof inicializarCreacion === 'function') {
+        inicializarCreacion();
+    } else {
+        setTimeout(waitForCreation, 50);
+    }
+})();
+</script>
+{% endblock extra_js %}
+
+    <!-- Modal: Editar Colaborador -->
+    <div id="modal-edit-colaborador" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div class="glass-card" style="max-width: 800px; width: 90%; padding: 30px; position: relative;">
+            <h3 style="margin-bottom: 20px; font-size: 1.25rem;">Editar Colaborador</h3>
+            <form id="form-edit-colaborador" onsubmit="event.preventDefault();" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Cédula (No editable)</label>
+                    <input type="text" id="edit-cedula" disabled style="background-color: var(--sidebar-bg); opacity: 0.7;">
+                </div>
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="edit-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Número Contacto</label>
+                    <input type="text" id="edit-numero-contacto">
+                </div>
+                <div class="form-group">
+                    <label>Rol</label>
+                    <select id="edit-rol" required>
+                        <option value="COLABORADOR">Colaborador</option>
+                        <option value="ADMINISTRADOR">Administrador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="edit-estado" required>
+                        <option value="ACTIVO">Activo</option>
+                        <option value="INACTIVO">Inactivo</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-cargo">Cargo</label>
+                    <input type="text" id="edit-cargo">
+                </div>
+                <div class="form-group">
+                    <label for="edit-area">Área</label>
+                    <input type="text" id="edit-area">
+                </div>
+                <div class="form-group">
+                    <label for="edit-fecha-nacimiento">Fecha de Nacimiento</label>
+                    <input type="date" id="edit-fecha-nacimiento">
+                </div>
+                <div class="form-group">
+                    <label for="edit-fecha-ingreso">Fecha de Ingreso</label>
+                    <input type="date" id="edit-fecha-ingreso">
+                </div>
+                <div class="form-group">
+                    <label for="edit-tipo-contrato">Tipo de Contrato</label>
+                    <select id="edit-tipo-contrato">
+                        <option value="Indefinido">Indefinido</option>
+                        <option value="Término Fijo">Término Fijo</option>
+                        <option value="Obra/Labor">Obra/Labor</option>
+                        <option value="Prestación de Servicios">Prestación de Servicios</option>
+                        <option value="Aprendizaje">Aprendizaje</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-salario-base">Salario Base</label>
+                    <input type="text" id="edit-salario-base" oninput="this.value = this.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')">
+                </div>
+                <div style="display:flex; gap:12px; grid-column: 1 / -1;">
+                    <div class="form-group" style="flex:1;">
+                        <label for="edit-nombre-emergencia">Contacto Emergencia (Nombre)</label>
+                        <input type="text" id="edit-nombre-emergencia">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label for="edit-telefono-emergencia">Contacto Emergencia (Tel)</label>
+                        <input type="text" id="edit-telefono-emergencia" maxlength="14" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                </div>
+                <div class="form-group" id="edit-jefe-container">
+                    <label for="edit-jefe-asignado">Jefe Asignado</label>
+                    <select id="edit-jefe-asignado">
+                        <option value="">Ninguno</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Contraseña (Opcional)</label>
+                    <input type="password" id="edit-password" placeholder="Dejar en blanco para no cambiar">
+                    <small style="color: var(--text-secondary); display:block; margin-top:4px;">El cambio de contraseña solo está permitido entre perfiles de la misma jerarquía.</small>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px; grid-column: 1 / -1;">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-edit" style="flex:1;">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-edit" style="flex:1;">Guardar Actualización</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,261 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block page_title %}Evaluación de Desempeño{% endblock %}
+{% block content %}
+<section id="view-evaluations" class="page">
+         <!-- PANEL ADMINISTRADOR / RRHH / JEFES -->
+         <div id="evaluations-admin-panel" style="display: block;">
+             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px;" class="evaluations-admin-grid">
+                 
+                 <!-- Panel de Configuración de Ciclos -->
+                 <div class="glass-card">
+                     <div class="card-title">Configurar Ciclos y Métricas</div>
+                     <form id="form-eval-ciclo" style="display: flex; flex-direction: column; gap: 15px;">
+                    {% csrf_token %}
+                         <div class="form-group">
+                             <label for="eval-ciclo-nombre">Nombre del Ciclo</label>
+                             <input type="text" id="eval-ciclo-nombre" placeholder="Ej: Evaluación Anual 2026" required>
+                         </div>
+                         <div class="form-group">
+                             <label>Ponderación de Métricas</label>
+                             <small style="color:var(--text-secondary); margin-bottom: 5px;">Configure el peso de cada indicador (debe sumar 100%)</small>
+                             <div style="display: flex; flex-direction: column; gap: 10px; padding: 10px; background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+                                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                                     <span style="font-size: 0.8rem; font-weight: 600;">C. Blandas (%):</span>
+                                     <input type="number" id="weight-blandas" value="30" style="width: 70px; padding: 4px 8px; text-align: center;">
+                                 </div>
+                                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                                     <span style="font-size: 0.8rem; font-weight: 600;">Metas (%):</span>
+                                     <input type="number" id="weight-metas" value="40" style="width: 70px; padding: 4px 8px; text-align: center;">
+                                 </div>
+                                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                                     <span style="font-size: 0.8rem; font-weight: 600;">Puntualidad (%):</span>
+                                     <input type="number" id="weight-puntualidad" value="30" style="width: 70px; padding: 4px 8px; text-align: center;" readonly disabled>
+                                 </div>
+                             </div>
+                         </div>
+                         <button type="submit" class="btn btn-primary">Registrar Ciclo</button>
+                     </form>
+
+                     <!-- Lista de Ciclos Activos -->
+                     <div style="margin-top: 25px;">
+                         <label style="font-weight: 600; margin-bottom: 10px; display: block;">Ciclos Definidos</label>
+                         <div id="eval-ciclos-list" style="display: flex; flex-direction: column; gap: 8px;">
+                             <!-- Inyectado dinámicamente -->
+                         </div>
+                     </div>
+                 </div>
+
+                 <!-- Formulario para Calificar Colaborador -->
+                 <div class="glass-card">
+                     <div class="card-title">Calificar Rendimiento del Colaborador</div>
+                     <form id="form-calificar-colab" style="display: flex; flex-direction: column; gap: 15px;">
+                         <div class="form-grid" style="grid-template-columns: 1.2fr 1fr;">
+                             <div class="form-group">
+                                 <label for="eval-select-colab">Colaborador a Evaluar</label>
+                                 <select id="eval-select-colab" required>
+                                     <option value="" disabled selected>Seleccione colaborador...</option>
+{% for colab in colaboradores %}
+                                        <option value="{{ colab.cedula }}">{{ colab.nombre }} ({{ colab.cedula }})</option>
+                                    {% endfor %}
+</select>
+                             </div>
+                             <div class="form-group">
+                                 <label for="eval-select-ciclo">Ciclo de Evaluación</label>
+                                 <select id="eval-select-ciclo" required>
+                                     <option value="" disabled selected>Seleccione ciclo...</option>
+                                     <!-- Poblado dinámicamente -->
+                                 </select>
+                             </div>
+                         </div>
+
+                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;" class="form-grid">
+                             <!-- Calificación Competencias Blandas -->
+                             <div class="form-group" style="align-items: center; text-align: center;">
+                                 <label style="font-size: 0.75rem;">Competencias Blandas</label>
+                                 <div class="star-rating-container" id="rating-blandas-stars" style="display: flex; gap: 6px; margin-top: 5px; cursor: pointer; color: var(--card-border);">
+                                     <span data-star="1" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="2" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="3" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="4" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="5" style="font-size: 1.5rem;">★</span>
+                                 </div>
+                                 <input type="hidden" id="eval-score-blandas" value="0" required>
+                             </div>
+
+                             <!-- Calificación Cumplimiento Metas -->
+                             <div class="form-group" style="align-items: center; text-align: center;">
+                                 <label style="font-size: 0.75rem;">Cumplimiento de Metas</label>
+                                 <div class="star-rating-container" id="rating-metas-stars" style="display: flex; gap: 6px; margin-top: 5px; cursor: pointer; color: var(--card-border);">
+                                     <span data-star="1" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="2" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="3" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="4" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="5" style="font-size: 1.5rem;">★</span>
+                                 </div>
+                                 <input type="hidden" id="eval-score-metas" value="0" required>
+                             </div>
+
+                             <!-- Calificación Puntualidad Automática -->
+                             <div class="form-group" style="align-items: center; text-align: center; background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 8px;">
+                                 <label style="font-size: 0.75rem; color: var(--accent);">Puntualidad (Auto)</label>
+                                 <div id="eval-score-puntualidad-display" style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-top: 4px;">N/A</div>
+                                 <input type="hidden" id="eval-score-puntualidad" value="0">
+                             </div>
+                         </div>
+
+                         <div class="form-group">
+                             <label for="eval-feedback-jefe">Feedback Cualitativo y Compromisos</label>
+                             <textarea id="eval-feedback-jefe" rows="3" placeholder="Escriba aquí los compromisos, fortalezas y áreas de mejora..." required></textarea>
+                         </div>
+
+                         <button type="submit" class="btn btn-primary">Registrar y Enviar Evaluación</button>
+                     </form>
+                 </div>
+             </div>
+
+             <!-- Tabla de Evaluaciones del Ciclo -->
+             <div class="glass-card" style="margin-top: 30px;">
+                 <div class="card-title">Evaluaciones del Ciclo</div>
+                 <div class="table-wrapper">
+                     <table>
+                         <thead>
+                             <tr>
+                                 <th>Colaborador</th>
+                                 <th>Ciclo</th>
+                                 <th>C. Blandas</th>
+                                 <th>Cumplimiento Metas</th>
+                                 <th>Puntualidad</th>
+                                 <th>Nota Final</th>
+                                 <th>Estado</th>
+                             </tr>
+                         </thead>
+                         <tbody id="table-evaluations-admin-body">
+
+                                {% for eval in evaluaciones %}
+                                <tr>
+                                    <td>{{ eval.colaborador.nombre }} ({{ eval.colaborador.cedula }})</td>
+                                    <td>{{ eval.periodo }}</td>
+                                    <td>{{ eval.fecha_evaluacion }}</td>
+                                    <td><strong style="color:var(--accent);">{{ eval.puntaje_global }}/5.0</strong></td>
+                                    <td>
+                                        <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size:0.75rem; font-weight:600; 
+                                        background-color: var(--warning-light); color: var(--warning);">
+                                            Pendiente Firma
+                                        </span>
+                                    </td>
+                                    <td style="display: flex; gap: 5px;">
+                                        <button class="btn btn-secondary btn-sm" onclick="alert('Funcionalidad pendiente')">Detalles</button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center;">No hay evaluaciones registradas</td>
+                                </tr>
+                                {% endfor %}
+
+</tbody>
+                     </table>
+                 </div>
+             </div>
+         </div>
+
+         <!-- PANEL COLABORADOR: MIS EVALUACIONES -->
+         <div id="evaluations-colab-panel" style="display: none;">
+             <div class="glass-card">
+                 <div class="card-title">Mis Evaluaciones de Desempeño</div>
+                 <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                     Haga clic en una evaluación completada para ver el feedback, agregar sus comentarios y firmar el documento de conformidad.
+                 </p>
+                 <div id="colaborador-evals-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                     <!-- Inyectado dinámicamente -->
+                 </div>
+             </div>
+
+             <!-- Panel de Firma del Colaborador (Detalle) -->
+             <div id="eval-colab-detail-card" style="display: none;" class="glass-card">
+                 <div style="border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 20px;">
+                     <h3 id="eval-detail-title" style="font-weight: 700; font-size: 1.2rem; color: var(--text-primary);">Evaluación de Desempeño</h3>
+                     <button class="btn btn-secondary" id="btn-back-to-evals" style="font-size: 0.75rem; padding: 4px 10px; margin-top: 8px;">&larr; Volver</button>
+                 </div>
+
+                 <!-- Indicadores Numéricos -->
+                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                     <div style="background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 15px; text-align: center;">
+                         <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); display: block; text-transform: uppercase;">Competencias Blandas</span>
+                         <span id="eval-detail-blandas" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">0.0 / 5.0</span>
+                     </div>
+                     <div style="background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 15px; text-align: center;">
+                         <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); display: block; text-transform: uppercase;">Cumplimiento de Metas</span>
+                         <span id="eval-detail-metas" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">0.0 / 5.0</span>
+                     </div>
+                     <div style="background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 15px; text-align: center;">
+                         <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); display: block; text-transform: uppercase;">Puntualidad</span>
+                         <span id="eval-detail-puntualidad" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">0.0 / 5.0</span>
+                     </div>
+                     <div style="background-color: var(--accent-light); border-radius: var(--radius-md); padding: 15px; text-align: center; border: 1px dashed var(--accent);">
+                         <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent); display: block; text-transform: uppercase;">Calificación Final</span>
+                         <span id="eval-detail-final" style="font-size: 1.7rem; font-weight: 800; color: var(--accent);">0.0 / 5.0</span>
+                     </div>
+                 </div>
+
+                 <!-- Feedback del Jefe -->
+                 <div style="background-color: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border); margin-bottom: 25px;">
+                     <label style="font-weight: 700; display: block; margin-bottom: 8px;">Feedback y Plan de Mejora del Evaluador:</label>
+                     <p id="eval-detail-feedback" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); text-align: justify; white-space: pre-wrap;"></p>
+                 </div>
+
+                 <!-- Comentarios y Firma Canvas del Colaborador -->
+                 <div id="eval-signature-section" style="display: flex; flex-direction: column; gap: 20px;">
+                     <div class="form-group">
+                         <label for="eval-colab-comments">Comentarios o descargos del Colaborador</label>
+                         <textarea id="eval-colab-comments" rows="3" placeholder="Escriba aquí sus comentarios, compromisos o descargos respecto a la calificación..."></textarea>
+                         <div id="eval-colab-comments-view" style="display: none; background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); font-style: italic; color: var(--text-secondary); white-space: pre-wrap;"></div>
+                     </div>
+
+                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 10px;" class="form-grid">
+                         <!-- Lienzo de Firma Digital -->
+                         <div style="display: flex; flex-direction: column; align-items: center;">
+                             <label style="font-weight: 600; margin-bottom: 8px; align-self: flex-start;">Firma Digital de Aceptación/Conformidad <span style="color: var(--danger);">*</span></label>
+                             <div style="position: relative; width: 100%; max-width: 350px; height: 130px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: var(--bg-primary); overflow: hidden; cursor: crosshair;">
+                                 <canvas id="eval-colab-canvas" width="350" height="130" style="display: block; width: 100%; height: 100%;"></canvas>
+                                 <img id="eval-colab-firma-img" style="display: none; width: 100%; height: 100%; object-fit: contain; background-color: #ffffff;">
+                             </div>
+                             <button type="button" class="btn btn-secondary" id="btn-clear-eval-canvas" style="font-size: 0.75rem; padding: 6px 12px; margin-top: 8px;">Limpiar Firma</button>
+                         </div>
+                         <div style="display: flex; align-items: flex-end; justify-content: flex-end;">
+                             <button class="btn btn-primary" id="btn-submit-eval-signature" style="height: 50px; padding: 0 30px; font-weight: 700;">Firmar y Concluir Evaluación</button>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </section>
+
+      <!-- ================= MÓDULO 10: CONSTANCIAS LABORALES (NUEVO) ================= -->
+      
+
+
+{% block extra_js %}
+<script>
+    window.DJANGO_COLABORADORES_DATA = {{ colaboradores_json|safe }};
+    window.DJANGO_EVALUACIONES_DATA = {{ evaluaciones_json|safe }};
+    window.obtenerColaboradores = function() { return window.DJANGO_COLABORADORES_DATA || []; };
+    window.obtenerEvaluaciones = function() { return window.DJANGO_EVALUACIONES_DATA || []; };
+</script>
+<script src="{% static 'js/evaluations.js' %}?v=6"></script>
+<script>
+(function waitForEvaluations() {
+    if (typeof window.inicializarEvaluaciones === 'function') {
+        window.inicializarEvaluaciones();
+    } else if (typeof renderCiclos === 'function') {
+        renderCiclos();
+        renderTablaEvaluaciones();
+        setupFirmaModal();
+    } else {
+        setTimeout(waitForEvaluations, 50);
+    }
+})();
+</script>
+{% endblock extra_js %}
+{% endblock %}

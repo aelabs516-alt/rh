@@ -1,0 +1,204 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block page_title %}Permisos y Vacaciones{% endblock %}
+{% block content %}
+<section id="view-requests" class="page">
+                 
+                 <!-- 1. Consola de Aprobaciones del Administrador -->
+                 <div id="admin-approvals-card" class="glass-card" style="display: none;">
+                     <div class="card-title" style="color: var(--accent);">
+                         <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                         <span>Consola Administrativa de Aprobaciones</span>
+                     </div>
+                     <div class="table-wrapper">
+                         <table>
+                             <thead>
+                                 <tr>
+                                     <th>Colaborador (Cédula)</th>
+                                     <th>Fecha Solicitud</th>
+                                     <th>Categoría</th>
+                                     <th>Detalles</th>
+                                     <th>Total Solicitado</th>
+                                     <th>Observaciones</th>
+                                     <th>Acciones</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="table-approvals-body">
+                                 <!-- Poblado dinámicamente -->
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+ 
+                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" class="requests-grid">
+                     
+                     <!-- 2. Formulario de Solicitudes (Simulador QR Solicitudes) -->
+                     <div class="glass-card">
+                         <div class="card-title">
+                             <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                             <span>Nueva Solicitud (Permisos y Vacaciones)</span>
+                         </div>
+                         <form id="form-solicitud-req">
+                    {% csrf_token %}
+                             <div class="form-grid">
+                                 <div class="form-group">
+                                     <label for="req-colab-cedula">Cédula</label>
+                                     <input type="text" inputmode="numeric" pattern="[0-9]*" id="req-colab-cedula" placeholder="Digite su cédula" oninput="window.autocompletarColaborador(this)" required {% if request.session.rol == 'COLABORADOR' %}value="{{ request.session.cedula }}" readonly style="opacity:0.7;"{% endif %}>
+                                 </div>
+                                 <div class="form-group">
+                                     <label for="req-colab-nombre">Nombre Completo</label>
+                                     <input type="text" id="req-colab-nombre" placeholder="Sincronizado automáticamente" required readonly style="background-color: var(--bg-hover);">
+                                 </div>
+                                 <div class="form-group">
+                                     <label for="req-colab-contacto">Contacto (Teléfono/Email)</label>
+                                     <input type="text" id="req-colab-contacto" placeholder="Sincronizado automáticamente" required readonly style="background-color: var(--bg-hover);">
+                                 </div>
+                                 <div class="form-group">
+                                     <label for="req-categoria">Categoría de Solicitud</label>
+                                     <select id="req-categoria" required>
+                                         <option value="permiso" selected>Permisos y Ausencias</option>
+                                         <option value="vacaciones">Vacaciones</option>
+                                     </select>
+                                 </div>
+                             </div>
+ 
+                             <!-- Bloque condicional: Permisos y Ausencias -->
+                             <div id="req-block-permiso" style="border-top: 1px solid var(--sidebar-border); padding-top: 15px; margin-top: 15px; display: flex; flex-direction: column; gap: 15px;">
+                                 <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="req-permiso-fecha">Fecha del Permiso</label>
+                                        <input type="date" id="req-permiso-fecha">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="req-permiso-tipo">Tipo de Permiso</label>
+                                        <select id="req-permiso-tipo">
+                                            <option value="Personal" selected>Personal</option>
+                                            <option value="Cita Médica">Cita Médica</option>
+                                            <option value="Calamidad">Calamidad</option>
+                                            <option value="Luto">Luto</option>
+                                            <option value="Otro">Otro (Especificar)</option>
+                                        </select>
+                                    </div>
+                                 </div>
+                                 <div class="form-grid">
+                                     <div class="form-group" id="req-permiso-otro-group" style="display: none;">
+                                         <label for="req-permiso-otro">Especifique el Motivo</label>
+                                         <input type="text" id="req-permiso-otro" placeholder="Especifique el motivo...">
+                                     </div>
+                                 </div>
+                                 <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px;">
+                                     <label for="req-permiso-dia-completo" style="margin-bottom:0;">¿DÍA COMPLETO? (SÍ / NO)</label>
+                                         <input type="checkbox" id="req-permiso-dia-completo" checked style="width:18px; height:18px; accent-color:var(--accent);">
+                                 </div>
+                                 
+                                 <!-- Bloque Horas (Oculto si Da Completo es true) -->
+                                 <div id="req-permiso-horas-block" class="form-grid" style="display: none;">
+                                     <div class="form-group">
+                                         <label for="req-permiso-salida">Hora de Salida</label>
+                                         <input type="time" id="req-permiso-salida">
+                                     </div>
+                                     <div class="form-group">
+                                         <label for="req-permiso-regreso">Hora de Regreso</label>
+                                         <input type="time" id="req-permiso-regreso">
+                                     </div>
+                                 </div>
+                                 <div id="req-permiso-calculo-panel" style="background-color: var(--bg-secondary); border: 1px solid var(--card-border); padding: 12px; border-radius: var(--radius-md); font-size: 0.8rem; font-weight:600; text-transform: uppercase;">
+                                     Tiempo Solicitado: <span id="req-permiso-horas-val" style="color:var(--accent); font-weight:700;">Día Completo</span>
+                                 </div>
+                             </div>
+ 
+                             <!-- Bloque condicional: Vacaciones -->
+                             <div id="req-block-vacaciones" style="border-top: 1px solid var(--sidebar-border); padding-top: 15px; margin-top: 15px; display: none; flex-direction: column; gap: 15px;">
+                                 <div class="form-grid">
+                                     <div class="form-group">
+                                         <label for="req-vac-inicio">Fecha de Inicio</label>
+                                         <input type="date" id="req-vac-inicio">
+                                     </div>
+                                     <div class="form-group">
+                                         <label for="req-vac-fin">Fecha de Fin (Último día de vacaciones)</label>
+                                         <input type="date" id="req-vac-fin">
+                                     </div>
+                                 </div>
+                                 <div id="req-vac-calculo-panel" style="background-color: var(--bg-secondary); border: 1px solid var(--card-border); padding: 12px; border-radius: var(--radius-md); font-size: 0.8rem; font-weight:600; text-transform: uppercase; line-height: 1.4; text-align: left;">
+                                     Días Hábiles a Disfrutar: <span id="req-vac-dias-val" style="color:var(--accent); font-weight:700;">0 días</span>
+                                     <br><small style="color:var(--text-secondary); font-size:0.65rem; text-transform:none;">(Se restan Domingos y Festivos de Colombia automáticamente)</small>
+                                 </div>
+                             </div>
+ 
+                             <div class="form-group full-width" style="margin-top: 15px; margin-bottom: 20px;">
+                                 <label for="req-observaciones">Observaciones adicionales</label>
+                                 <textarea id="req-observaciones" rows="2" placeholder="Escriba aquí observaciones o detalles de la solicitud..."></textarea>
+                             </div>
+ 
+                             <button type="submit" class="btn btn-primary" style="width: 100%; height: 45px;">Enviar Solicitud</button>
+                         </form>
+                     </div>
+ 
+                     <!-- 3. Interfaz de Seguimiento de Solicitudes -->
+                     <div class="glass-card" style="display:flex; flex-direction:column; gap:20px;">
+                         <div>
+                             <div class="card-title">
+                                 <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                 <span>Seguimiento de Solicitudes</span>
+                             </div>
+                             <p style="color:var(--text-secondary); font-size:0.8rem; margin-top:-10px;">
+                                 Consulte el estado en tiempo real de sus solicitudes (Aprobadas, Rechazadas o Pendientes).
+                             </p>
+                         </div>
+                         
+                         <div class="form-group" id="req-seg-cedula-group" style="margin-bottom: 10px;">
+                             <label for="req-seg-cedula">Cédula del Colaborador</label>
+                             <div style="display:flex; gap:10px;">
+                                 <input type="text" inputmode="numeric" pattern="[0-9]*" id="req-seg-cedula" placeholder="Ej: 10102020" style="flex-grow:1;">
+                                 <button type="button" class="btn btn-secondary" id="btn-consultar-seguimiento" style="padding: 10px 18px;">Buscar</button>
+                             </div>
+                         </div>
+ 
+                         <div class="table-wrapper" style="flex-grow:1;">
+                             <table>
+                                 <thead>
+                                     <tr>
+                                         <th>Fecha</th>
+                                         <th>Categoría</th>
+                                         <th>Detalle</th>
+                                         <th>Cantidad</th>
+                                         <th>Estado</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody id="table-seguimiento-body">
+                                     <tr>
+                                         <td colspan="5" style="text-align:center; color:var(--text-secondary); font-size:0.85rem;">Ingrese su cédula para consultar su historial.</td>
+                                     </tr>
+                                 </tbody>
+                             </table>
+                         </div>
+                     </div>
+                 </div>
+             </section>
+
+             <!-- ================= MÓDULO 6: DOCUMENTOS CREADOS ================= -->
+
+
+{% block extra_js %}
+<script>
+    window.DJANGO_COLABORADORES_DATA = {{ colaboradores_json|safe }};
+    window.DJANGO_PERMISOS_DATA = {{ permisos_json|safe }};
+    window.obtenerColaboradorPorCedula = function(cedula) {
+        return window.DJANGO_COLABORADORES_DATA.find(c => c.cedula == cedula);
+    };
+    window.obtenerSolicitudes = function() {
+        return window.DJANGO_PERMISOS_DATA || [];
+    };
+</script>
+<script src="{% static 'js/requests.js' %}?v=18"></script>
+<script>
+(function waitForRequests() {
+    if (typeof inicializarRequests === 'function') {
+        inicializarRequests();
+    } else {
+        setTimeout(waitForRequests, 50);
+    }
+})();
+</script>
+{% endblock extra_js %}
+{% endblock %}

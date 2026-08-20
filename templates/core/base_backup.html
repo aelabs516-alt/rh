@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Del Personal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- CSS Estilos -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Chart.js CDN para gráficos analíticos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- SIDEBAR (Navegación Global) -->
+    <aside>
+        <div class="logo-container" style="display: flex; flex-direction: column; align-items: center; padding: 20px 10px; gap: 12px; border-bottom: 1px solid var(--sidebar-border);">
+            <!-- Logo TM (TECNOLOGÍA & MOVILIDAD) .png image -->
+            <img src="{% static 'images/logo.png' %}" alt="Tecnología & Movilidad" class="logo-img" style="max-width: 130px; height: auto; display: block; transition: var(--transition);">
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; text-align: center; font-family: 'Poppins', sans-serif; margin-top: 6px;">Gestión Del Personal</div>
+            <!-- Botón de Sesión Premium (Abajo del Logo) -->
+            <button class="theme-toggle" id="btn-session-modal" style="background-color: var(--bg-secondary); border: 1px solid var(--card-border); justify-content: flex-start; gap: 8px; padding: 8px 12px; margin-bottom: 0; width: 100%; cursor: pointer;">
+                <!-- User Icon -->
+                <svg style="width: 16px; height: 16px; color: var(--accent); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span id="session-user-display" style="font-weight: 600; font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Administrador Global</span>
+            </button>
+        </div>
+
+        <ul class="nav-links">
+            <li id="menu-dashboard" class="active">
+                <a href="#dashboard">
+                    <!-- Dashboard SVG Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li id="menu-creation">
+                <a href="#creation">
+                    <!-- Creation (Personal) SVG Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    <span>Personal y Horarios</span>
+                </a>
+            </li>
+            <li id="menu-admin">
+                <a href="#admin">
+                    <!-- Admin (Spreadsheet) SVG Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Consola Admin</span>
+                </a>
+            </li>
+            <li id="menu-qr">
+                <a href="#qr">
+                    <!-- QR / Scan SVG Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M16 20h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Ingreso o Salida</span>
+                </a>
+            </li>
+            <li id="menu-requests">
+                <a href="#requests">
+                    <!-- Requests Clipboard Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    <span>Permisos y Vacaciones</span>
+                </a>
+            </li>
+            <li id="menu-disciplinary">
+                <a href="#disciplinary">
+                    <!-- Disciplinary Scale Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                    <span>Actas Disciplinarias</span>
+                </a>
+            </li>
+            <li id="menu-payroll">
+                <a href="#payroll">
+                    <!-- Payroll Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Colillas de Pago</span>
+                </a>
+            </li>
+            <li id="menu-evaluations">
+                <a href="#evaluations">
+                    <!-- Evaluations Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                    <span>Evaluación Desempeño</span>
+                </a>
+            </li>
+            <li id="menu-certificates">
+                <a href="#certificates">
+                    <!-- Certificate Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Constancias Laborales</span>
+                </a>
+            </li>
+            <li id="menu-documents" style="display: none;">
+                <a href="#documents">
+                    <!-- Documents Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Documentos Creados</span>
+                </a>
+            </li>
+
+        </ul>
+
+        <div class="sidebar-footer" style="padding: 16px; border-top: 1px solid var(--sidebar-border);">
+            <!-- Indicador de Dispositivo (Móvil/Desktop) -->
+            <div id="sidebarDeviceIndicator" style="display: none !important; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-md); margin-bottom: 12px;">
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Dispositivo</span>
+                <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px;">
+                    <span id="device-icon"></span>
+                    <span id="device-label">Detectando...</span>
+                </div>
+            </div>
+
+            <!-- On/Off Switch para el Modo Oscuro -->
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background-color: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: var(--radius-md);">
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Modo Oscuro</span>
+                <label class="switch-container">
+                    <input type="checkbox" id="theme-toggle-switch">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- CONTENT WRAPPER -->
+    <main>
+        <!-- HEADER (Fecha, Reloj y Simulación de Config) -->
+        <header style="height: auto; min-height: 90px; padding: 15px 40px; flex-wrap: wrap; gap: 15px; justify-content: space-between; align-items: center; display: flex;">
+            <div class="header-title" id="page-title-display">Dashboard Analítico</div>
+            <div class="header-time-container" style="gap: 16px; flex-wrap: wrap; align-items: center; display: flex;">
+                <!-- IP Sede Widget -->
+                <div class="header-widget" style="display: none;">
+                    <span class="header-widget-label">IP Sede (Red)</span>
+                    <div class="header-widget-card">
+                        <!-- Network/IP Svg Icon -->
+                        <svg style="width: 14px; height: 14px; color: var(--accent); opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                        <input type="text" id="simulated-ip-input" value="192.168.1.25">
+                        <span id="ip-status-badge" class="badge badge-success" style="font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; line-height: 1;">Autorizada</span>
+                    </div>
+                </div>
+
+                <!-- Fecha Actual Widget -->
+                <div class="header-widget">
+                    <span class="header-widget-label">Fecha Actual</span>
+                    <div class="header-widget-card">
+                        <!-- Calendar Svg Icon -->
+                        <svg style="width: 14px; height: 14px; color: var(--accent); opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span id="live-date">Cargando fecha...</span>
+                    </div>
+                </div>
+
+                <!-- Hora Actual Widget -->
+                <div class="header-widget">
+                    <span class="header-widget-label">Hora Medellín (Col)</span>
+                    <div class="header-widget-card" style="font-weight: 700; font-size: 1rem; min-width: 130px; letter-spacing: 0.5px;">
+                        <!-- Clock Svg Icon -->
+                        <svg style="width: 14px; height: 14px; color: var(--accent); opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span id="live-clock">00:00:00</span>
+                    </div>
+                </div>
+
+
+            </div>
+        </header>
+
+        <!-- CUERPO DE CONTENIDO SPA -->
+        <div class="content-body">
+
+            <!-- ================= MÓDULO 4: DASHBOARD (POR DEFECTO) ================= -->
+            <section id="view-dashboard" class="page active">
+                <!-- Alerta de Actas Pendientes para Colaborador -->
+                <div id="dashboard-disciplinary-alert" class="glass-card" style="display: none; border: 2px solid var(--danger); background-color: var(--danger-light); margin-bottom: 24px; padding: 15px 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 12px; color: var(--danger);">
+                            <svg style="width: 32px; height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h4 style="font-weight: 700; font-size: 0.95rem;">Tiene actas disciplinarias pendientes por firmar</h4>
+                                <p style="font-size: 0.8rem; margin-top: 2px; color: var(--text-primary);">El sistema ha generado llamados de atención por retardos acumulados. Debe ingresar descargos y firmar.</p>
+                            </div>
+                        </div>
+                        <a href="#disciplinary" class="btn btn-danger" style="font-size: 0.8rem; padding: 8px 16px; font-weight: 600; text-decoration: none; text-align: center;">Ir a Firmar Actas</a>
+                    </div>
+                </div>
+
+                <!-- Filtros Globales -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 0; align-items: flex-end;">
+                        <div class="form-group">
+                            <label for="filter-year">Filtrar Año</label>
+                            <select id="filter-year">
+                                <option value="2026" selected>2026</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-month">Filtrar Mes</label>
+                            <select id="filter-month">
+                                <option value="all">Todos los Meses</option>
+                                <option value="0">Enero</option>
+                                <option value="1">Febrero</option>
+                                <option value="2">Marzo</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Mayo</option>
+                                <option value="5" selected>Junio</option>
+                                <option value="6">Julio</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Septiembre</option>
+                                <option value="9">Octubre</option>
+                                <option value="10">Noviembre</option>
+                                <option value="11">Diciembre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-day">Filtrar Día Específico</label>
+                            <input type="date" id="filter-day">
+                        </div>
+                        <div class="form-group" id="filter-colaborador-container">
+                            <label for="filter-colaborador">Colaborador</label>
+                            <select id="filter-colaborador">
+                                <option value="all" selected>Todos los Empleados</option>
+                                <!-- Cargado dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-secondary" id="btn-reset-filters" style="width:100%; height:45px;">
+                                Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Métricas Principales -->
+                <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 30px;">
+                    <!-- Tarjeta Horas Totales -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 20px; border-left: 5px solid var(--accent);">
+                        <div style="background-color: var(--accent-light); padding:16px; border-radius: var(--radius-md); color: var(--accent);">
+                            <svg style="width:32px; height:32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;">Horas Normales</div>
+                            <div style="font-size:1.8rem; font-weight:700; color:var(--text-primary);" id="metric-normal-hours">0.0h</div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Horas Extras -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 20px; border-left: 5px solid var(--success);">
+                        <div style="background-color: var(--success-light); padding:16px; border-radius: var(--radius-md); color: var(--success);">
+                            <svg style="width:32px; height:32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;">Horas Extras</div>
+                            <div style="font-size:1.8rem; font-weight:700; color:var(--text-primary);" id="metric-extra-hours">0.0h</div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Horas Permiso / Ausencia -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 20px; border-left: 5px solid var(--warning);">
+                        <div style="background-color: var(--warning-light); padding:16px; border-radius: var(--radius-md); color: var(--warning);">
+                            <svg style="width:32px; height:32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;">Horas de Permiso</div>
+                            <div style="font-size:1.8rem; font-weight:700; color:var(--text-primary);" id="metric-permisos-hours">0.0h</div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Balance Horario (Saldo Neto) -->
+                    <div class="glass-card" id="metric-balance-card" style="margin-bottom:0; display:flex; align-items:center; gap: 20px; border-left: 5px solid var(--accent); transition: var(--transition);">
+                        <div id="metric-balance-icon-container" style="background-color: var(--accent-light); padding:16px; border-radius: var(--radius-md); color: var(--accent);">
+                            <svg style="width:32px; height:32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;" id="metric-balance-label">Balance Horario</div>
+                            <div style="font-size:1.6rem; font-weight:700; color:var(--text-primary);" id="metric-balance-hours">0.0h</div>
+                            <small id="metric-balance-subtext" style="font-size:0.65rem; font-weight:600; color:var(--text-secondary); display:block; margin-top:2px;">Sin Novedad</small>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Llegadas Tarde (Contador) -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 20px; border-left: 5px solid var(--danger);">
+                        <div style="background-color: var(--danger-light); padding:16px; border-radius: var(--radius-md); color: var(--danger);">
+                            <svg style="width:32px; height:32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;">Llegadas Tarde</div>
+                            <div style="font-size:1.8rem; font-weight:700; color:var(--text-primary);" id="metric-retardos-count">0</div>
+                            <small style="font-size:0.65rem; font-weight:600; color:var(--text-secondary); display:block; margin-top:2px;">Retardos en periodo</small>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Widget Disciplinario -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 20px; border-left: 5px solid #8b5cf6;">
+                        <div style="background-color: #f3e8ff; padding:16px; border-radius: var(--radius-md); color: #8b5cf6;">
+                            <svg style="width:32px; height:32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;">Actas Disciplinarias</div>
+                            <div style="display:flex; gap: 12px; margin-top: 4px;">
+                                <div>
+                                    <span style="font-size:1.4rem; font-weight:700; color:var(--success);" id="metric-actas-concluidas">0</span>
+                                    <small style="font-size:0.65rem; color:var(--text-secondary); display:block;">Firmadas</small>
+                                </div>
+                                <div style="border-left: 1px solid var(--card-border); padding-left: 12px;">
+                                    <span style="font-size:1.4rem; font-weight:700; color:var(--warning);" id="metric-actas-pendientes">0</span>
+                                    <small style="font-size:0.65rem; color:var(--text-secondary); display:block;">Pendientes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Desempeño Promedio -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 20px; border-left: 5px solid #d946ef;">
+                        <div style="background-color: #fdf2ff; padding:16px; border-radius: var(--radius-md); color: #d946ef;">
+                            <svg style="width:32px; height:32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.246.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.907a1 1 0 00.95-.69l1.519-4.674z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;">Evaluación Desempeño</div>
+                            <div style="font-size:1.8rem; font-weight:700; color:var(--text-primary);" id="metric-performance-score">N/A</div>
+                            <small style="font-size:0.65rem; font-weight:600; color:var(--text-secondary); display:block; margin-top:2px;">Promedio ciclo activo</small>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Gráficos Analíticos -->
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px;" class="dashboard-charts-grid">
+                    <!-- Histórico Diario -->
+                    <div class="glass-card" style="margin-bottom:0; min-height: 350px;">
+                        <div class="card-title">Comparativa de Horas por Día</div>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="chart-daily-hours"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Distribución de Horas y Ranking -->
+                    <div style="display:flex; flex-direction:column; gap:30px;">
+                        <div class="glass-card" style="margin-bottom:0; flex-grow:1;">
+                            <div class="card-title">Distribución de Tiempos</div>
+                            <div style="position: relative; height: 200px; width: 100%; display:flex; justify-content:center;">
+                                <canvas id="chart-dist-hours"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ranking adicional en ancho completo -->
+                <div class="glass-card" style="margin-top: 30px; margin-bottom: 30px;">
+                    <div class="card-title">Ranking de Colaboradores con más Horas Extras / Recargos</div>
+                    <div style="position: relative; height: 260px; width: 100%;">
+                        <canvas id="chart-ranking-extras"></canvas>
+                    </div>
+                </div>
+
+                <!-- Sección de Analíticas Especiales para el Administrador -->
+                <div id="dashboard-admin-section" class="glass-card" style="margin-top: 30px; margin-bottom: 30px;">
+                    <div class="card-title" style="color:var(--danger);">
+                        <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span>Panel de Auditoría del Administrador</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 30px;" class="admin-widgets-grid">
+                        <!-- Columna 1: Incidencias Críticas Semanales -->
+                        <div style="background-color: var(--bg-secondary); border: 1px solid var(--card-border); padding: 20px; border-radius: var(--radius-md);">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px; text-transform: uppercase;">Incidencias Críticas de Retardo (Esta Semana)</div>
+                            <div style="display:flex; align-items:center; gap: 15px; margin-bottom: 20px;">
+                                <div style="font-size: 2.5rem; font-weight: 700; color: var(--danger);" id="admin-critical-count">0</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">Colaboradores reincidentes con 3 o más retardos acumulados en la semana calendaría.</div>
+                            </div>
+                            <div id="admin-critical-list" style="display:flex; flex-direction:column; gap: 8px; max-height: 150px; overflow-y: auto;">
+                                <!-- Cargado dinámicamente -->
+                            </div>
+                        </div>
+                        <!-- Columna 2: Bitácora de Motivos -->
+                        <div style="background-color: var(--bg-secondary); border: 1px solid var(--card-border); padding: 20px; border-radius: var(--radius-md);">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px; text-transform: uppercase;">Bitácora de Motivos (Observaciones Obligatorias)</div>
+                            <div id="admin-motivos-list" style="display:flex; flex-direction:column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                                <!-- Cargado dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consolidado Neto de Horas por Colaborador -->
+                <div class="glass-card" style="margin-top: 30px; margin-bottom: 0;">
+                    <div class="card-title">
+                        <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span>Consolidado Neto de Horas por Colaborador (Extras - Permisos)</span>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Colaborador (Cédula)</th>
+                                    <th>Turno/Día</th>
+                                    <th>Total Extras</th>
+                                    <th>Total Permisos</th>
+                                    <th>Balance Neto</th>
+                                    <th>Estado / Liquidación</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-consolidado-body">
+                                <!-- Cargado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ================= MÓDULO 1: CREACIÓN (PERSONAL Y TURNOS) ================= -->
+            <section id="view-creation" class="page">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" class="creation-grid">
+                    
+                    <!-- Formulario de Colaborador -->
+                    <div class="glass-card">
+                        <div class="card-title" id="colaborador-form-title">
+                            <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            <span>Crear Nuevo Colaborador</span>
+                        </div>
+                        <form id="form-colaborador">
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-cedula">Cédula (Identificación)</label>
+                                    <input type="number" id="colab-cedula" placeholder="Ej: 10203040" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-nombre">Nombre Completo</label>
+                                    <input type="text" id="colab-nombre" placeholder="Ej: Juan Pérez" required>
+                                </div>
+                            </div>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-cargo">Cargo (Puesto de Trabajo)</label>
+                                    <input type="text" id="colab-cargo" placeholder="Ej: Analista de TI" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-area">Área (Departamento)</label>
+                                    <input type="text" id="colab-area" placeholder="Ej: Tecnología" required>
+                                </div>
+                            </div>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-fecha-nacimiento">Fecha de Nacimiento</label>
+                                    <input type="date" id="colab-fecha-nacimiento" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-nombre-emergencia">Nombre contacto Emergencia</label>
+                                    <input type="text" id="colab-nombre-emergencia" placeholder="Ej: Mamá, Esposa..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-telefono-emergencia">Contacto</label>
+                                    <input type="text" id="colab-telefono-emergencia" placeholder="Solo números" maxlength="14" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                </div>
+                            </div>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-fecha-ingreso">Fecha de Ingreso</label>
+                                    <input type="date" id="colab-fecha-ingreso" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-tipo-contrato">Tipo de Contrato</label>
+                                    <select id="colab-tipo-contrato" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;" required>
+                                        <option value="Término Fijo">Término Fijo</option>
+                                        <option value="Indefinido" selected>Indefinido</option>
+                                        <option value="Obra/Labor">Obra/Labor</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-salario-base">Salario Base ($)</label>
+                                    <input type="number" id="colab-salario-base" placeholder="Ej: 3200000" required>
+                                </div>
+                            </div>
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label for="colab-estado">Estado Expediente</label>
+                                    <select id="colab-estado" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;" required>
+                                        <option value="ACTIVO" selected>ACTIVO</option>
+                                        <option value="INACTIVO">INACTIVO</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-rol">Tipo de Perfil</label>
+                                    <select id="colab-rol" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;" required>
+                                        <option value="COLABORADOR" selected>Colaborador (Planta/Horarios)</option>
+                                        <option value="JEFE_INMEDIATO">Jefe Inmediato (Admin Global)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="colab-contrasena">Contraseña de Acceso <span style="color: var(--danger);">*</span></label>
+                                    <input type="password" id="colab-contrasena" placeholder="Ingrese contraseña para inicio de sesión" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;" required>
+                                </div>
+                            </div>
+                            
+                            <!-- Sección exclusiva de Colaboradores -->
+                            <div id="colab-only-section">
+                                <div class="form-group" style="margin-bottom: 16px;">
+                                    <label for="colab-jefe-asignado">Jefe Inmediato Responsable</label>
+                                    <select id="colab-jefe-asignado" style="width:100%; padding: 8px 12px; border-radius:4px; border:1px solid var(--card-border); background-color:var(--bg-primary); color:var(--text-primary); outline:none;">
+                                        <!-- Cargado dinámicamente -->
+                                    </select>
+                                </div>
+                                <div class="form-group full-width" style="margin-bottom: 24px;">
+                                    <label style="margin-bottom: 8px; display: block;">Matriz Dinámica de Turnos Múltiples</label>
+                                    <div id="colab-matrix-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+                                        <!-- Las filas de turnos se inyectan dinámicamente -->
+                                    </div>
+                                    <button type="button" class="btn btn-secondary" id="btn-add-matrix-line" style="font-size: 0.8rem; padding: 8px 16px; align-self: flex-start; display: flex; align-items: center; gap: 6px;">
+                                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        Añadir Asignación de Turno
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Repositorio Documental (Expediente Digital, visible en edición) -->
+                            <div id="colab-expediente-digital-container" style="margin-top: 24px; border-top: 1px solid var(--sidebar-border); padding-top: 20px; display: none;">
+                                <label style="font-weight: 700; margin-bottom: 12px; display: block; color: var(--accent);">Expediente Digital (Documentos PDF/Image)</label>
+                                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+                                    <div style="background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:6px;">Cargar Documento de Identidad (PDF/Image)</label>
+                                        <input type="file" id="doc-file-identidad" accept=".pdf,image/*">
+                                    </div>
+                                    <div style="background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:6px;">Cargar Contrato Firmado (PDF/Image)</label>
+                                        <input type="file" id="doc-file-contrato" accept=".pdf,image/*">
+                                    </div>
+                                    <div style="background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:6px;">Cargar Exámenes Médicos (PDF/Image)</label>
+                                        <input type="file" id="doc-file-examenes" accept=".pdf,image/*">
+                                    </div>
+                                    <div style="background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:6px;">Cargar Certificaciones (PDF/Image)</label>
+                                        <input type="file" id="doc-file-certificaciones" accept=".pdf,image/*">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 15px;">
+                                    <label style="font-weight: 600; font-size: 0.8rem; display: block; margin-bottom: 8px;">Documentos en el Expediente:</label>
+                                    <div class="table-wrapper">
+                                        <table style="font-size: 0.8rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tipo de Documento</th>
+                                                    <th>Nombre de Archivo</th>
+                                                    <th>Acción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="table-colab-docs-body">
+                                                <!-- Inyectado dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección exclusiva de Jefes -->
+                            <div id="jefe-only-section" style="display: none; margin-bottom: 24px;">
+                                <label style="font-weight: 600; margin-bottom: 8px; display: block;">Firma Digital del Jefe Inmediato <span style="color: var(--danger);">*</span></label>
+                                <div style="position: relative; width: 100%; max-width: 350px; height: 130px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: var(--bg-primary); overflow: hidden; cursor: crosshair; margin-bottom: 8px;">
+                                    <canvas id="jefe-creation-canvas" width="350" height="130" style="display: block; width: 100%; height: 100%;"></canvas>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" class="btn btn-secondary" id="btn-clear-jefe-canvas" style="font-size: 0.75rem; padding: 6px 12px;">Limpiar Firma</button>
+                                    <button type="button" class="btn btn-secondary" id="btn-upload-jefe-signature" style="font-size: 0.75rem; padding: 6px 12px; display: flex; align-items: center; gap: 4px;">
+                                        <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                        Cargar Imagen
+                                    </button>
+                                    <input type="file" id="jefe-signature-file" accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-colab" style="display:none;">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Guardar Colaborador</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Formulario de Horarios / Turnos -->
+                    <div class="glass-card">
+                        <div class="card-title" id="horario-form-title">
+                            <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            <span>Configurar Horarios / Turnos</span>
+                        </div>
+                        <form id="form-horario">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="shift-codigo">Código del Turno (Alfanumérico)</label>
+                                <input type="text" id="shift-codigo" placeholder="Ej: DIU, NOC, M8-17" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="shift-nombre">Nombre Descriptivo</label>
+                                <input type="text" id="shift-nombre" placeholder="Ej: Diurno Administrativo" required>
+                            </div>
+                            <div class="form-grid" style="margin-bottom: 24px;">
+                                <div class="form-group">
+                                    <label for="shift-inicio">Hora de Entrada (Ingreso)</label>
+                                    <input type="time" id="shift-inicio" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="shift-fin">Hora de Salida</label>
+                                    <input type="time" id="shift-fin" required>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-shift" style="display:none;">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Guardar Horario</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- Tabla de Personal Registrado -->
+                <div class="glass-card">
+                    <div class="card-title">Listado de Colaboradores</div>
+                    <div class="table-wrapper">
+                        <table>
+                             <thead>
+                                 <tr>
+                                     <th>Cédula</th>
+                                     <th>Nombre del Colaborador</th>
+                                     <th>Cargo / Área</th>
+                                     <th>Perfil / Rol</th>
+                                     <th>Horarios Asignados / Jefe Responsable</th>
+                                     <th>Acciones</th>
+                                 </tr>
+                             </thead>
+                            <tbody id="table-colaboradores-body">
+                                <!-- Cargado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tabla de Horarios Registrados -->
+                <div class="glass-card" style="margin-bottom: 0;">
+                    <div class="card-title">Turnos / Horarios Definidos</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th>Rango Horario</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-horarios-body">
+                                <!-- Cargado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ================= MÓDULO 2: CONSOLA ADMINISTRADOR (INGRESO MANUAL) ================= -->
+            <section id="view-admin" class="page">
+                
+                <!-- Ingreso Manual de Marcación -->
+                <div class="glass-card">
+                    <div class="card-title" id="registro-form-title">
+                        <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        <span>Registrar Marcación Manual (Administrador)</span>
+                    </div>
+                    
+                    <form id="form-registro-manual">
+                        <input type="hidden" id="edit-registro-id" value="">
+                        
+                        <!-- Selectores de Modo de Registro -->
+                        <div style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--sidebar-border); padding-bottom: 15px;">
+                            <button type="button" class="btn btn-primary" id="btn-mode-individual" style="padding: 8px 16px; font-size: 0.8rem;">Registro Individual</button>
+                            <button type="button" class="btn btn-secondary" id="btn-mode-masivo" style="padding: 8px 16px; font-size: 0.8rem;">Registro Simultáneo (Masivo)</button>
+                        </div>
+
+                        <!-- 1. Campos de Entrada del Modo Individual -->
+                        <div id="individual-form-grid" class="form-grid">
+                            <div class="form-group">
+                                <label for="reg-colaborador">Colaborador</label>
+                                <select id="reg-colaborador">
+                                    <option value="" disabled selected>Seleccione un colaborador...</option>
+                                    <!-- Cargado dinámicamente -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-fecha">Fecha del Registro</label>
+                                <input type="date" id="reg-fecha">
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-ingreso">Hora de Ingreso (HH:MM)</label>
+                                <input type="time" id="reg-ingreso">
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-salida">Hora de Salida (HH:MM)</label>
+                                <input type="time" id="reg-salida">
+                            </div>
+                        </div>
+
+                        <!-- 2. Panel de Cálculos en Vivo - Modo Individual -->
+                        <div id="individual-live-panel" style="background-color: var(--bg-secondary); border:1px solid var(--card-border); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap: 16px;">
+                            <div style="text-align:center;">
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); display:block; text-transform:uppercase;">Turno del Colaborador</span>
+                                <span id="calc-live-turno" style="font-weight:700; color:var(--text-primary); font-size:1.1rem;">-</span>
+                            </div>
+                            <div style="text-align:center;">
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); display:block; text-transform:uppercase;">Horas Normales</span>
+                                <span id="calc-live-normales" style="font-weight:700; color:var(--accent); font-size:1.25rem;">0.0h</span>
+                            </div>
+                            <div style="text-align:center;">
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); display:block; text-transform:uppercase;">Horas Extras</span>
+                                <span id="calc-live-extras" style="font-weight:700; color:var(--success); font-size:1.25rem;">0.0h</span>
+                            </div>
+                            <div style="text-align:center;">
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); display:block; text-transform:uppercase;">Permisos / Ausencias</span>
+                                <span id="calc-live-permisos" style="font-weight:700; color:var(--warning); font-size:1.25rem;">0.0h</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Observaciones - Modo Individual -->
+                        <div id="individual-obs-group" class="form-group full-width" style="margin-bottom: 20px;">
+                            <label for="reg-tipo-permiso" id="lbl-reg-tipo-permiso">Observaciones / Motivo de Permiso</label>
+                            <select id="reg-tipo-permiso" style="margin-bottom: 10px;">
+                                <option value="">Ninguno / Registro Normal</option>
+                                <optgroup label="Permisos Remunerados">
+                                    <option value="Citas Medicas">Citas Médicas</option>
+                                    <option value="Calamidad Domestica">Calamidad Doméstica</option>
+                                    <option value="Votacion y Jurado">Votación y Jurado</option>
+                                    <option value="Obligaciones Escolares">Obligaciones Escolares</option>
+                                    <option value="Diligencias Judiciales">Diligencias Judiciales</option>
+                                    <option value="Incapacidad Enfermedad General">Incapacidad Enfermedad General</option>
+                                    <option value="Incapacidad Laboral">Incapacidad Laboral</option>
+                                </optgroup>
+                                <optgroup label="Permisos No Remunerados">
+                                    <option value="Otros">Otros (Especifique)</option>
+                                </optgroup>
+                            </select>
+                            
+                            <div id="reg-incapacidad-container" style="display: none; margin-bottom: 10px; align-items: center; gap: 8px; background-color: var(--warning-light); padding: 8px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--warning);">
+                                <input type="checkbox" id="reg-incapacidad-presentada" style="width: 16px; height: 16px; cursor: pointer;">
+                                <label for="reg-incapacidad-presentada" style="font-weight: 600; font-size: 0.85rem; cursor: pointer; color: var(--warning);">¿Presenta soporte de incapacidad?</label>
+                            </div>
+
+                            <div id="reg-observaciones-container" style="display: none;">
+                                <textarea id="reg-observaciones" rows="2" placeholder="Especifique el motivo de la desviación..."></textarea>
+                            </div>
+                            <small id="reg-warning-obs" style="color: var(--danger); font-weight:600; display:none; margin-top: 4px;">⚠️ Observación obligatoria: se detectó una desviación de horas extras o permisos.</small>
+                        </div>
+
+                        <!-- 4. Contenedor de Entrada Masivo / Simultáneo -->
+                        <div id="masivo-form-grid" style="display: none; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                            <div class="form-group" style="width: 250px; margin-bottom: 10px;">
+                                <label for="reg-fecha-masivo">Fecha del Registro Masivo</label>
+                                <input type="date" id="reg-fecha-masivo">
+                            </div>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Colaborador</th>
+                                            <th>Turno del Día</th>
+                                            <th style="width: 140px;">Hora Ingreso</th>
+                                            <th style="width: 140px;">Hora Salida</th>
+                                            <th>Horas Calculadas</th>
+                                            <th>Observaciones / Justificación</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-masivo-body">
+                                        <!-- Filas de colaboradores inyectadas dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary" id="btn-cancel-registro" style="display:none;">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" id="btn-submit-registro">Guardar Registro</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabla Hoja de Cálculo (Verificación y Control) -->
+                <div class="glass-card" style="margin-bottom: 0;">
+                    <div class="card-title">Consola de Control de Tiempos (Hoja de Cálculo)</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Colaborador (Cédula)</th>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Ingreso</th>
+                                    <th>Salida</th>
+                                    <th>Horas Normales</th>
+                                    <th>Horas Extras</th>
+                                    <th>Horas Permiso</th>
+                                    <th>IP Registro</th>
+                                    <th>Observaciones</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-registros-body">
+                                <!-- Cargado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Configuración Anti-Fraude (IPs Autorizadas de la Sede) -->
+                <div class="glass-card" style="margin-top: 30px;">
+                    <div class="card-title" style="color: var(--accent);">
+                        <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span>Configuración Anti-Fraude (IPs Autorizadas de la Sede)</span>
+                    </div>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                        Defina las direcciones IP autorizadas desde las cuales los colaboradores pueden realizar marcaciones en el auto-servicio.
+                    </p>
+                    <div id="authorized-ips-container" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+                        <!-- Cargados dinámicamente -->
+                    </div>
+                    <div style="display:flex; gap:8px; max-width: 400px;">
+                        <input type="text" id="input-new-authorized-ip" placeholder="Ej: 192.168.1.10" style="padding: 8px 12px; font-size:0.85rem; flex-grow: 1;">
+                        <button class="btn btn-primary" id="btn-add-authorized-ip" style="padding: 8px 14px;">Añadir IP</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ================= MÓDULO 5: GESTIÓN DE ACTAS DISCIPLINARIAS ================= -->
+            <section id="view-disciplinary" class="page">
+                <!-- VISTA ADMINISTRADOR -->
+                <div id="disciplinary-admin-view" style="display: none;">
+                    <!-- Panel de Escáner y Alertas de Infracción -->
+                    <div class="glass-card" style="border: 2px solid var(--warning); margin-bottom: 24px;">
+                        <div class="card-title" style="color: var(--warning); display: flex; align-items: center; gap: 8px;">
+                            <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <span>Detección Automática de Actas Disciplinarias (Semanal)</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 15px;">
+                            El sistema detecta automáticamente a los colaboradores con 4 o más retardos semanales que aún no tienen un acta disciplinaria generada para ese periodo.
+                        </p>
+                        <div id="disciplinary-warnings-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Listado General de Actas -->
+                    <div class="glass-card">
+                        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <span>Historial General de Actas Disciplinarias</span>
+                            </div>
+                            <button class="btn btn-primary" id="btn-import-acta" style="font-size: 0.8rem; padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+                                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                Importar Acta (Física)
+                            </button>
+                        </div>
+
+                        <!-- Filtros del Historial -->
+                        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 20px; margin-top: 15px; align-items: flex-end;">
+                            <div class="form-group">
+                                <label for="filter-acta-search">Buscar Colaborador (Nombre/Cédula)</label>
+                                <input type="text" id="filter-acta-search" placeholder="Ej: Diana Gómez...">
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-acta-falta">Tipo de Falta</label>
+                                <select id="filter-acta-falta">
+                                    <option value="all">Todas las Faltas</option>
+                                    <option value="LEVE">Leve</option>
+                                    <option value="GRAVE">Grave</option>
+                                    <option value="MUY_GRAVE">Muy Grave</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-acta-estado">Estado de Firma</label>
+                                <select id="filter-acta-estado">
+                                    <option value="all">Todos los Estados</option>
+                                    <option value="PENDIENTE_FIRMA">Pendiente Firma</option>
+                                    <option value="CONCLUIDA">Concluida</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-secondary" id="btn-clear-acta-filters" style="width: 100%; height: 42px;">Limpiar Filtros</button>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Actas -->
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Acta</th>
+                                        <th>Colaborador</th>
+                                        <th>Fecha Emisión</th>
+                                        <th>Tipo Falta</th>
+                                        <th>Retardos en Semana</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-actas-body">
+                                    <!-- Inyectado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA COLABORADOR -->
+                <div id="disciplinary-colaborador-view" style="display: none;">
+                    <div id="disciplinary-colab-pending-alert" class="glass-card" style="border: 2px solid var(--danger); background-color: var(--danger-light); display: none; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: center; gap: 12px; color: var(--danger);">
+                            <svg style="width: 32px; height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h4 style="font-weight: 700; font-size: 1rem;">Atención: Acta Disciplinaria Pendiente</h4>
+                                <p style="font-size: 0.85rem; margin-top: 4px;">Tiene un proceso disciplinario abierto que requiere de su firma y descargos. Por favor revise el listado a continuación.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="card-title">Mis Actas Disciplinarias</div>
+                        <div id="colaborador-actas-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FORMULARIO DE DETALLE / FIRMA (COMPARTIDO) -->
+                <div id="disciplinary-form-container" style="display: none;">
+                    <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <h3 id="disciplinary-form-title" style="font-weight: 700; font-size: 1.25rem; color: var(--text-primary);">Acta Disciplinaria</h3>
+                                <button class="btn btn-secondary" id="btn-back-to-actas" style="font-size: 0.75rem; padding: 4px 10px; align-self: flex-start;">&larr; Volver al Listado</button>
+                            </div>
+                            <img src="{% static 'images/logo.png' %}" alt="Logo Compañía" style="max-width: 120px; height: auto; display: block; border-radius: 4px;">
+                        </div>
+
+
+                        <!-- Panel de Vista Importada (Scanned Image) -->
+                        <div id="acta-imported-view" style="display: none; text-align: center; margin-bottom: 20px;">
+                            <div style="background-color: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border); margin-bottom: 20px; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div><strong>Colaborador:</strong> <span id="acta-imported-colab-name" style="font-weight:700;"></span></div>
+                                <div><strong>Fecha de Emisión:</strong> <span id="acta-imported-date"></span></div>
+                                <div><strong>Tipo de Falta:</strong> <span id="acta-imported-falta-badge"></span></div>
+                                <div><strong>Estado:</strong> <span class="badge badge-success">Concluida (Importada)</span></div>
+                            </div>
+                            <label style="font-weight: 600; margin-bottom: 10px; display: block; text-align: left; color: var(--text-primary);">Documento Digitalizado Cargado:</label>
+                            <div style="border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: #ffffff; padding: 10px; overflow: hidden; display: flex; justify-content: center; align-items: center; max-height: 700px;">
+                                <img id="acta-imported-img" style="max-width: 100%; height: auto; max-height: 650px; object-fit: contain; border-radius: 4px;">
+                            </div>
+                        </div>
+
+                        <!-- Campos Normales -->
+                        <div id="acta-normal-fields">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;" class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre del Colaborador</label>
+                                <input type="text" id="acta-form-nombre" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Cédula</label>
+                                <input type="text" id="acta-form-cedula" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Cargo</label>
+                                <input type="text" id="acta-form-cargo" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Área</label>
+                                <input type="text" id="acta-form-area" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de Acta</label>
+                                <input type="text" id="acta-form-fecha" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Decisión Empresa</label>
+                                <input type="text" id="acta-form-decision" readonly style="background-color: var(--bg-secondary); cursor: not-allowed; font-weight: 700; color: var(--danger);">
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Falta (Marcado Dinámico) -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="margin-bottom: 8px; display: block;">Tipo de Falta (Marcado Dinámico por Sistema)</label>
+                            <div style="display: flex; gap: 20px; background-color: var(--bg-secondary); padding: 12px 20px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: not-allowed; font-weight: 600; color: var(--text-primary);">
+                                    <input type="checkbox" id="acta-form-falta-leve" disabled style="transform: scale(1.15);">
+                                    <span>Leve (4 retardos semanales)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: not-allowed; font-weight: 600; color: var(--warning);">
+                                    <input type="checkbox" id="acta-form-falta-grave" disabled style="transform: scale(1.15);">
+                                    <span>Grave (5 retardos semanales o reincidente mes)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: not-allowed; font-weight: 600; color: var(--danger);">
+                                    <input type="checkbox" id="acta-form-falta-muygrave" disabled style="transform: scale(1.15);">
+                                    <span>Muy Grave (&ge; 6 retardos semanales)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Descripción Detallada del Hecho -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Descripción Detallada del Hecho</label>
+                            <div id="acta-form-descripcion" style="background-color: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border); font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); text-align: justify;">
+                                <!-- Texto dinámico -->
+                            </div>
+                        </div>
+
+                        <!-- Descargos del Colaborador -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="acta-form-descargos" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Descargos del Colaborador <span style="color: var(--danger);">*</span></span>
+                                <small id="acta-form-descargos-char-count" style="font-size:0.75rem; color:var(--text-secondary);">Mínimo 10 caracteres</small>
+                            </label>
+                            <textarea id="acta-form-descargos" rows="4" placeholder="Escriba aquí de manera detallada sus descargos y motivos de las demoras..." style="width: 100%; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); resize: vertical; line-height: 1.4; outline: none;"></textarea>
+                            <div id="acta-form-descargos-view" style="display: none; background-color: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border); font-style: italic; color: var(--text-secondary); text-align: justify; white-space: pre-wrap;">
+                                <!-- Descargos registrados en actas concluidas -->
+                            </div>
+                        </div>
+
+                        <!-- Panel de Firmas -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; border-top: 1px solid var(--card-border); padding-top: 24px;" class="form-grid">
+                            <!-- Firma Colaborador (Canvas interactivo o imagen base64) -->
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <label style="font-weight: 600; margin-bottom: 8px; align-self: flex-start;">Firma Digital del Colaborador <span style="color: var(--danger);">*</span></label>
+                                <div id="canvas-container" style="position: relative; width: 100%; max-width: 350px; height: 130px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: var(--bg-primary); overflow: hidden; cursor: crosshair;">
+                                    <canvas id="disciplinary-canvas" width="350" height="130" style="display: block; width: 100%; height: 100%;"></canvas>
+                                    <img id="acta-form-firma-img" style="display: none; width: 100%; height: 100%; object-fit: contain; background-color: #ffffff;">
+                                </div>
+                                <button type="button" class="btn btn-secondary" id="btn-clear-canvas" style="font-size: 0.75rem; padding: 6px 12px; margin-top: 8px;">Limpiar Firma</button>
+                            </div>
+
+                            <!-- Firma Jefe Inmediato (Vectorizada precargada) -->
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                                <label style="font-weight: 600; margin-bottom: 8px; align-self: flex-start;">Firma Autorizada Jefe Inmediato</label>
+                                <div style="width: 100%; max-width: 350px; height: 130px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: #ffffff; display: flex; align-items: center; justify-content: center;" id="boss-signature-svg-container">
+                                    <!-- Inyectado dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón Enviar -->
+                        <div style="margin-top: 35px; text-align: right;" id="acta-submit-container">
+                            <button type="button" class="btn btn-primary" id="btn-submit-acta" style="font-weight: 600; padding: 12px 30px;">
+                                Enviar Descargos y Firmar Acta
+                            </button>
+                        </div>
+                        </div> <!-- Fin de #acta-normal-fields -->
+                    </div>
+                </div>
+            </section>
+
+
+
+            <!-- ================= MÓDULO 3: INGRESO O SALIDA (COLABORADOR) ================= -->
+            <section id="view-qr" class="page">
+                
+                <div style="max-width: 500px; margin: 0 auto;" class="qr-grid">
+                    
+                    <!-- Panel 2: Simulador de Dispositivo Móvil (Registra Marcaje) -->
+                    <div class="glass-card" style="border: 2px solid var(--card-border); border-radius: 30px; padding: 24px; position:relative; overflow:hidden;">
+                        <!-- Muesca de Celular Virtual (Notch) -->
+                        <div style="width: 140px; height: 20px; background-color: var(--text-primary); margin: -25px auto 25px auto; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;"></div>
+                        
+                        <div style="text-align:center; margin-bottom: 20px;">
+                            <div class="badge badge-info" style="font-size: 0.7rem; margin-bottom:8px;">Simulador de Escaneo Móvil</div>
+                            <h4 style="font-size: 1.1rem; font-weight:600;">Pantalla de Marcación</h4>
+                            <p style="color:var(--text-secondary); font-size:0.75rem;">Simula el ingreso de datos al escanear el código.</p>
+                        </div>
+
+                        <form id="form-scan-colaborador" style="display:flex; flex-direction:column; gap:16px;">
+                            
+                            <!-- Contenedor de la Cámara -->
+                            <div class="camera-container" style="position: relative; width: 100%; max-width: 300px; margin: 0 auto; border-radius: var(--radius-md); overflow: hidden; background-color: #000; box-shadow: var(--shadow-md);">
+                                <video id="camera-stream" autoplay playsinline style="width: 100%; height: 250px; object-fit: cover; display: block;"></video>
+                                <div class="face-silhouette" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5); pointer-events: none; border: 2px dashed rgba(255, 255, 255, 0.5); border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%; transform: scale(0.65);"></div>
+                                <div style="position: absolute; bottom: 8px; left: 0; width: 100%; text-align: center; color: rgba(255,255,255,0.8); font-size: 0.65rem; pointer-events: none; font-weight: 600; text-shadow: 1px 1px 2px #000;">Por favor, centre su rostro</div>
+                            </div>
+                            <canvas id="camera-canvas" style="display:none;"></canvas>
+
+                            <div class="form-group">
+                                <label for="scan-cedula">Número de Cédula</label>
+                                <input type="number" id="scan-cedula" placeholder="Digite su cédula para validar" required>
+                            </div>
+
+                            <!-- Selector de tipo de marcaje grande e interactivo -->
+                            <div class="form-group">
+                                <label>Tipo de Marcaje</label>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px;">
+                                    <button type="button" class="btn btn-secondary" id="btn-scan-type-ingreso" style="border: 2px solid var(--success); color:var(--success); background-color:var(--success-light); font-weight:700; height:60px;">
+                                        <svg style="width:20px; height:20px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                                        Ingreso
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="btn-scan-type-salida" style="border: 2px solid var(--card-border); height:60px;">
+                                        <svg style="width:20px; height:20px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                                        Salida
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Detalle del Dispositivo Capturado -->
+                            <div style="display: none; background-color: var(--bg-secondary); border: 1px solid var(--card-border); padding: 12px; border-radius: var(--radius-md); font-size:0.75rem;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                    <span style="color:var(--text-secondary); font-weight:600;">IP Capturada:</span>
+                                    <span id="scan-captured-ip" style="font-weight:700; color:var(--text-primary);">192.168.1.25</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span id="scan-ip-badge" class="badge badge-success">Válida (En Sede)</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" style="height: 50px; font-size:1rem; margin-top: 10px;">
+                                Registrar
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+            </section>
+
+             <!-- ================= MÓDULO 5: SOLICITUDES DE PERMISOS Y VACACIONES ================= -->
+             <section id="view-requests" class="page">
+                 
+                 <!-- 1. Consola de Aprobaciones del Administrador -->
+                 <div id="admin-approvals-card" class="glass-card" style="display: none;">
+                     <div class="card-title" style="color: var(--accent);">
+                         <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                         <span>Consola Administrativa de Aprobaciones</span>
+                     </div>
+                     <div class="table-wrapper">
+                         <table>
+                             <thead>
+                                 <tr>
+                                     <th>Colaborador (Cédula)</th>
+                                     <th>Fecha Solicitud</th>
+                                     <th>Categoría</th>
+                                     <th>Detalles</th>
+                                     <th>Total Solicitado</th>
+                                     <th>Observaciones</th>
+                                     <th>Acciones</th>
+                                 </tr>
+                             </thead>
+                             <tbody id="table-approvals-body">
+                                 <!-- Poblado dinámicamente -->
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+ 
+                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" class="requests-grid">
+                     
+                     <!-- 2. Formulario de Solicitudes (Simulador QR Solicitudes) -->
+                     <div class="glass-card">
+                         <div class="card-title">
+                             <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                             <span>Nueva Solicitud (Permisos y Vacaciones)</span>
+                         </div>
+                         <form id="form-solicitud-req">
+                             <div class="form-grid">
+                                 <div class="form-group">
+                                     <label for="req-colab-cedula">Cédula</label>
+                                     <input type="number" id="req-colab-cedula" placeholder="Digite su cédula" required>
+                                 </div>
+                                 <div class="form-group">
+                                     <label for="req-colab-nombre">Nombre Completo</label>
+                                     <input type="text" id="req-colab-nombre" placeholder="Digite su nombre" required>
+                                 </div>
+                                 <div class="form-group">
+                                     <label for="req-colab-contacto">Contacto (Teléfono/Email)</label>
+                                     <input type="text" id="req-colab-contacto" placeholder="Ej: 3123456789 o correo@empresa.com" required>
+                                 </div>
+                                 <div class="form-group">
+                                     <label for="req-categoria">Categoría de Solicitud</label>
+                                     <select id="req-categoria" required>
+                                         <option value="permiso" selected>Permisos y Ausencias</option>
+                                         <option value="vacaciones">Vacaciones</option>
+                                     </select>
+                                 </div>
+                             </div>
+ 
+                             <!-- Bloque condicional: Permisos y Ausencias -->
+                             <div id="req-block-permiso" style="border-top: 1px solid var(--sidebar-border); padding-top: 15px; margin-top: 15px; display: flex; flex-direction: column; gap: 15px;">
+                                 <div class="form-grid">
+                                     <div class="form-group">
+                                         <label for="req-permiso-tipo">Tipo de Permiso</label>
+                                         <select id="req-permiso-tipo">
+                                             <option value="Personal" selected>Personal</option>
+                                             <option value="Medico">Médico</option>
+                                             <option value="Otro">Otro</option>
+                                         </select>
+                                     </div>
+                                     <div class="form-group" id="req-permiso-otro-group" style="display: none;">
+                                         <label for="req-permiso-otro">Detalle del Motivo</label>
+                                         <input type="text" id="req-permiso-otro" placeholder="Especifique el motivo...">
+                                     </div>
+                                 </div>
+                                 <div class="form-group">
+                                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;">
+                                         <input type="checkbox" id="req-permiso-dia-completo" checked style="width:18px; height:18px; accent-color:var(--accent);">
+                                         <span>¿Día Completo? (Sí / No)</span>
+                                     </label>
+                                 </div>
+                                 <div id="req-permiso-horas-block" class="form-grid" style="display: none;">
+                                     <div class="form-group">
+                                         <label for="req-permiso-salida">Hora de Salida</label>
+                                         <input type="time" id="req-permiso-salida">
+                                     </div>
+                                     <div class="form-group">
+                                         <label for="req-permiso-regreso">Hora de Regreso</label>
+                                         <input type="time" id="req-permiso-regreso">
+                                     </div>
+                                 </div>
+                                 <div id="req-permiso-calculo-panel" style="background-color: var(--bg-secondary); border: 1px solid var(--card-border); padding: 12px; border-radius: var(--radius-md); font-size: 0.8rem; font-weight:600; text-transform: uppercase;">
+                                     Tiempo Solicitado: <span id="req-permiso-horas-val" style="color:var(--accent); font-weight:700;">Día Completo</span>
+                                 </div>
+                             </div>
+ 
+                             <!-- Bloque condicional: Vacaciones -->
+                             <div id="req-block-vacaciones" style="border-top: 1px solid var(--sidebar-border); padding-top: 15px; margin-top: 15px; display: none; flex-direction: column; gap: 15px;">
+                                 <div class="form-grid">
+                                     <div class="form-group">
+                                         <label for="req-vac-inicio">Fecha Inicio de Vacaciones</label>
+                                         <input type="date" id="req-vac-inicio">
+                                     </div>
+                                     <div class="form-group">
+                                         <label for="req-vac-fin">Fecha Fin de Vacaciones</label>
+                                         <input type="date" id="req-vac-fin">
+                                     </div>
+                                 </div>
+                                 <div id="req-vac-calculo-panel" style="background-color: var(--bg-secondary); border: 1px solid var(--card-border); padding: 12px; border-radius: var(--radius-md); font-size: 0.8rem; font-weight:600; text-transform: uppercase; line-height: 1.4; text-align: left;">
+                                     Días Hábiles a Disfrutar: <span id="req-vac-dias-val" style="color:var(--accent); font-weight:700;">0 días</span>
+                                     <br><small style="color:var(--text-secondary); font-size:0.65rem; text-transform:none;">(Se restan Domingos y Festivos de Colombia automáticamente)</small>
+                                 </div>
+                             </div>
+ 
+                             <div class="form-group full-width" style="margin-top: 15px; margin-bottom: 20px;">
+                                 <label for="req-observaciones">Observaciones adicionales</label>
+                                 <textarea id="req-observaciones" rows="2" placeholder="Escriba aquí observaciones o detalles de la solicitud..."></textarea>
+                             </div>
+ 
+                             <button type="submit" class="btn btn-primary" style="width: 100%; height: 45px;">Enviar Solicitud</button>
+                         </form>
+                     </div>
+ 
+                     <!-- 3. Interfaz de Seguimiento de Solicitudes -->
+                     <div class="glass-card" style="display:flex; flex-direction:column; gap:20px;">
+                         <div>
+                             <div class="card-title">
+                                 <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                 <span>Seguimiento de Solicitudes</span>
+                             </div>
+                             <p style="color:var(--text-secondary); font-size:0.8rem; margin-top:-10px;">
+                                 Consulte el estado en tiempo real de sus solicitudes (Aprobadas, Rechazadas o Pendientes).
+                             </p>
+                         </div>
+                         
+                         <div class="form-group" id="req-seg-cedula-group" style="margin-bottom: 10px;">
+                             <label for="req-seg-cedula">Cédula del Colaborador</label>
+                             <div style="display:flex; gap:10px;">
+                                 <input type="number" id="req-seg-cedula" placeholder="Ej: 10102020" style="flex-grow:1;">
+                                 <button type="button" class="btn btn-secondary" id="btn-consultar-seguimiento" style="padding: 10px 18px;">Buscar</button>
+                             </div>
+                         </div>
+ 
+                         <div class="table-wrapper" style="flex-grow:1;">
+                             <table>
+                                 <thead>
+                                     <tr>
+                                         <th>Fecha</th>
+                                         <th>Categoría</th>
+                                         <th>Detalle</th>
+                                         <th>Cantidad</th>
+                                         <th>Estado</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody id="table-seguimiento-body">
+                                     <tr>
+                                         <td colspan="5" style="text-align:center; color:var(--text-secondary); font-size:0.85rem;">Ingrese su cédula para consultar su historial.</td>
+                                     </tr>
+                                 </tbody>
+                             </table>
+                         </div>
+                     </div>
+                 </div>
+             </section>
+
+             <!-- ================= MÓDULO 6: DOCUMENTOS CREADOS ================= -->
+             <section id="view-documents" class="page">
+                 
+                 <!-- Filtros y Búsqueda -->
+                 <div class="glass-card" style="margin-bottom: 20px;">
+                     <div class="card-title" style="color: var(--accent);">
+                         <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                         <span>Filtros de Búsqueda - Historial de Documentos</span>
+                     </div>
+                     <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; align-items: flex-end;">
+                         <div class="form-group">
+                             <label for="doc-search-input">Colaborador (Nombre o Cédula)</label>
+                             <input type="text" id="doc-search-input" placeholder="Buscar por nombre o cédula...">
+                         </div>
+                         <div class="form-group">
+                             <label for="doc-filter-category">Categoría</label>
+                             <select id="doc-filter-category">
+                                 <option value="todos" selected>Todas</option>
+                                 <option value="permiso">Permisos y Ausencias</option>
+                                 <option value="vacaciones">Vacaciones</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <label for="doc-filter-state">Estado</label>
+                             <select id="doc-filter-state">
+                                 <option value="todos" selected>Todos</option>
+                                 <option value="PENDIENTE">Pendiente</option>
+                                 <option value="AUTORIZADA">Autorizada</option>
+                                 <option value="RECHAZADA">Rechazada</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <button type="button" class="btn btn-secondary" id="btn-clear-doc-filters" style="width: 100%; height: 45px;">Limpiar Filtros</button>
+                         </div>
+                     </div>
+                 </div>
+
+                 <!-- Tabla de Documentos Creados -->
+                 <div class="glass-card">
+                     <div class="card-title">
+                         <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                         <span>Historial de Solicitudes y Documentos Creados</span>
+                     </div>
+                     <div class="table-wrapper">
+                         <table>
+                             <thead>
+                                 <tr>
+                                     <th>Cod. Doc</th>
+                                     <th>Colaborador (Cédula)</th>
+                                     <th>Fecha Registro</th>
+                                     <th>Categoría</th>
+                                     <th>Cantidad Solicitada</th>
+                                 </tr>
+                             </thead>
+                                 <tbody id="table-documents-body">
+                                  <!-- Poblado dinámicamente -->
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+
+              </section>
+
+              <!-- ================= MÓDULO 8: COLILLAS DE PAGO ================= -->
+              <section id="view-payroll" class="page">
+                  <!-- PANEL ADMINISTRADOR / RRHH: CARGA DE COLILLAS -->
+                  <div id="payroll-admin-panel" style="display: none;">
+                      <div class="glass-card">
+                          <div class="card-title">
+                              <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                              <span>Carga Masiva de Colillas de Pago</span>
+                          </div>
+                          <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:15px;">
+                              Seleccione o arrastre los documentos PDF correspondientes a las colillas de pago. 
+                              <strong>Formato del nombre del archivo:</strong> Cedula_Mes_Año.pdf (Ej: 12345678_07_2026.pdf).
+                          </p>
+                          
+                          <div class="form-group" style="margin-bottom: 16px; border: 2px dashed var(--accent); padding: 40px; text-align: center; border-radius: var(--radius-md); background: rgba(59, 130, 246, 0.05); cursor: pointer; transition: all 0.3s;" id="payroll-drop-zone">
+                              <label for="payroll-pdf-input" style="cursor: pointer; display: block;">
+                                  <svg style="width: 48px; height: 48px; color: var(--accent); margin: 0 auto 10px auto;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                  <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem; margin-bottom: 5px;">Haga clic para seleccionar PDFs</div>
+                                  <div style="font-size: 0.85rem; color: var(--text-secondary);">o arrastre y suelte los archivos aquí</div>
+                              </label>
+                              <input type="file" id="payroll-pdf-input" multiple accept=".pdf" style="display: none;">
+                          </div>
+                          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                              <span id="payroll-file-count" style="font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">0 archivos seleccionados</span>
+                              <button class="btn btn-primary" id="btn-import-payroll-pdf">Procesar e Importar Colillas</button>
+                          </div>
+                      </div>
+
+                      <!-- Historial de Colillas Cargadas -->
+                      <div class="glass-card">
+                          <div class="card-title">Historial de Colillas Cargadas</div>
+                          <div class="table-wrapper">
+                              <table>
+                                  <thead>
+                                      <tr>
+                                          <th>Cédula Colaborador</th>
+                                          <th>Nombre</th>
+                                          <th>Mes</th>
+                                          <th>Año</th>
+                                          <th>Documento</th>
+                                          <th>Acciones</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody id="table-payroll-history-body">
+                                      <!-- Inyectado dinámicamente -->
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- PANEL COLABORADOR: AUTO-SERVICIO -->
+                  <div id="payroll-colab-panel" style="display: none;">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" class="payroll-colab-grid">
+                          
+                          <!-- Buscar y Descargar Comprobantes -->
+                          <div class="glass-card">
+                              <div class="card-title">Mis Colillas de Pago</div>
+                              <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                                  Busque su desprendible de pago seleccionando el período requerido.
+                              </p>
+                              
+                              <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+                                  <div class="form-group">
+                                      <label for="payroll-search-year">Año</label>
+                                      <select id="payroll-search-year">
+                                          <option value="2026" selected>2026</option>
+                                          <option value="2025">2025</option>
+                                          <option value="2024">2024</option>
+                                      </select>
+                                  </div>
+                                  <div class="form-group">
+                                      <label for="payroll-search-month">Mes</label>
+                                      <select id="payroll-search-month">
+                                          <option value="0">Enero</option>
+                                          <option value="1">Febrero</option>
+                                          <option value="2">Marzo</option>
+                                          <option value="3">Abril</option>
+                                          <option value="4">Mayo</option>
+                                          <option value="5" selected>Junio</option>
+                                          <option value="6">Julio</option>
+                                          <option value="7">Agosto</option>
+                                          <option value="8">Septiembre</option>
+                                          <option value="9">Octubre</option>
+                                          <option value="10">Noviembre</option>
+                                          <option value="11">Diciembre</option>
+                                      </select>
+                                  </div>
+                              </div>
+                              <button class="btn btn-primary" id="btn-search-payslip" style="width: 100%;">Buscar Colilla de Pago</button>
+                          </div>
+
+                          <!-- Autogeneración de Certificaciones Laborales -->
+                          <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                              <div>
+                                  <div class="card-title">Certificaciones Laborales</div>
+                                  <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px; line-height: 1.5;">
+                                      Configure y descargue su certificación laboral firmada digitalmente de forma instantánea.
+                                  </p>
+                                  <div id="payroll-cert-block-msg" style="display: none; padding: 12px; border-radius: var(--radius-md); background-color: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); font-size: 0.8rem; font-weight: 600; margin-bottom: 20px;">
+                                      ⚠️ Descarga bloqueada: Su estado de expediente actual es INACTIVO. Póngase en contacto con Recursos Humanos.
+                                  </div>
+                                  
+                                  <div id="payroll-cert-fields-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                                      <div class="form-group">
+                                          <label for="payroll-colab-cert-dirigido" style="font-size: 0.8rem; font-weight: 600;">Dirigido a <span style="color: var(--danger);">*</span></label>
+                                          <input type="text" id="payroll-colab-cert-dirigido" placeholder="Ej: Bancolombia S.A." required style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;">
+                                      </div>
+                                      <div class="form-group">
+                                          <label for="payroll-colab-cert-incluir-salario" style="font-size: 0.8rem; font-weight: 600;">¿Incluir Información Salarial? <span style="color: var(--danger);">*</span></label>
+                                          <select id="payroll-colab-cert-incluir-salario" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                                              <option value="si" selected>Sí, incluir salario en la constancia</option>
+                                              <option value="no">No, omitir información de salario</option>
+                                          </select>
+                                      </div>
+                                  </div>
+                              </div>
+                              <button class="btn btn-primary" id="btn-generate-work-cert" style="width: 100%; height: 50px; font-weight: 700;">Generar Certificación Laboral</button>
+                          </div>
+                      </div>
+
+
+                  </div>
+              </section>
+
+     <!-- ================= MÓDULO 9: EVALUACIÓN DE DESEMPEÑO (NUEVO) ================= -->
+     <section id="view-evaluations" class="page">
+         <!-- PANEL ADMINISTRADOR / RRHH / JEFES -->
+         <div id="evaluations-admin-panel" style="display: none;">
+             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px;" class="evaluations-admin-grid">
+                 
+                 <!-- Panel de Configuración de Ciclos -->
+                 <div class="glass-card">
+                     <div class="card-title">Configurar Ciclos y Métricas</div>
+                     <form id="form-eval-ciclo" style="display: flex; flex-direction: column; gap: 15px;">
+                         <div class="form-group">
+                             <label for="eval-ciclo-nombre">Nombre del Ciclo</label>
+                             <input type="text" id="eval-ciclo-nombre" placeholder="Ej: Evaluación Anual 2026" required>
+                         </div>
+                         <div class="form-group">
+                             <label>Ponderación de Métricas</label>
+                             <small style="color:var(--text-secondary); margin-bottom: 5px;">Configure el peso de cada indicador (debe sumar 100%)</small>
+                             <div style="display: flex; flex-direction: column; gap: 10px; padding: 10px; background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+                                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                                     <span style="font-size: 0.8rem; font-weight: 600;">C. Blandas (%):</span>
+                                     <input type="number" id="weight-blandas" value="30" style="width: 70px; padding: 4px 8px; text-align: center;">
+                                 </div>
+                                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                                     <span style="font-size: 0.8rem; font-weight: 600;">Metas (%):</span>
+                                     <input type="number" id="weight-metas" value="40" style="width: 70px; padding: 4px 8px; text-align: center;">
+                                 </div>
+                                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                                     <span style="font-size: 0.8rem; font-weight: 600;">Puntualidad (%):</span>
+                                     <input type="number" id="weight-puntualidad" value="30" style="width: 70px; padding: 4px 8px; text-align: center;" readonly disabled>
+                                 </div>
+                             </div>
+                         </div>
+                         <button type="submit" class="btn btn-primary">Registrar Ciclo</button>
+                     </form>
+
+                     <!-- Lista de Ciclos Activos -->
+                     <div style="margin-top: 25px;">
+                         <label style="font-weight: 600; margin-bottom: 10px; display: block;">Ciclos Definidos</label>
+                         <div id="eval-ciclos-list" style="display: flex; flex-direction: column; gap: 8px;">
+                             <!-- Inyectado dinámicamente -->
+                         </div>
+                     </div>
+                 </div>
+
+                 <!-- Formulario para Calificar Colaborador -->
+                 <div class="glass-card">
+                     <div class="card-title">Calificar Rendimiento del Colaborador</div>
+                     <form id="form-calificar-colab" style="display: flex; flex-direction: column; gap: 15px;">
+                         <div class="form-grid" style="grid-template-columns: 1.2fr 1fr;">
+                             <div class="form-group">
+                                 <label for="eval-select-colab">Colaborador a Evaluar</label>
+                                 <select id="eval-select-colab" required>
+                                     <option value="" disabled selected>Seleccione colaborador...</option>
+                                     <!-- Poblado dinámicamente -->
+                                 </select>
+                             </div>
+                             <div class="form-group">
+                                 <label for="eval-select-ciclo">Ciclo de Evaluación</label>
+                                 <select id="eval-select-ciclo" required>
+                                     <option value="" disabled selected>Seleccione ciclo...</option>
+                                     <!-- Poblado dinámicamente -->
+                                 </select>
+                             </div>
+                         </div>
+
+                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;" class="form-grid">
+                             <!-- Calificación Competencias Blandas -->
+                             <div class="form-group" style="align-items: center; text-align: center;">
+                                 <label style="font-size: 0.75rem;">Competencias Blandas</label>
+                                 <div class="star-rating-container" id="rating-blandas-stars" style="display: flex; gap: 6px; margin-top: 5px; cursor: pointer; color: var(--card-border);">
+                                     <span data-star="1" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="2" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="3" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="4" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="5" style="font-size: 1.5rem;">★</span>
+                                 </div>
+                                 <input type="hidden" id="eval-score-blandas" value="0" required>
+                             </div>
+
+                             <!-- Calificación Cumplimiento Metas -->
+                             <div class="form-group" style="align-items: center; text-align: center;">
+                                 <label style="font-size: 0.75rem;">Cumplimiento de Metas</label>
+                                 <div class="star-rating-container" id="rating-metas-stars" style="display: flex; gap: 6px; margin-top: 5px; cursor: pointer; color: var(--card-border);">
+                                     <span data-star="1" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="2" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="3" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="4" style="font-size: 1.5rem;">★</span>
+                                     <span data-star="5" style="font-size: 1.5rem;">★</span>
+                                 </div>
+                                 <input type="hidden" id="eval-score-metas" value="0" required>
+                             </div>
+
+                             <!-- Calificación Puntualidad Automática -->
+                             <div class="form-group" style="align-items: center; text-align: center; background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 8px;">
+                                 <label style="font-size: 0.75rem; color: var(--accent);">Puntualidad (Auto)</label>
+                                 <div id="eval-score-puntualidad-display" style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-top: 4px;">N/A</div>
+                                 <input type="hidden" id="eval-score-puntualidad" value="0">
+                             </div>
+                         </div>
+
+                         <div class="form-group">
+                             <label for="eval-feedback-jefe">Feedback Cualitativo y Compromisos</label>
+                             <textarea id="eval-feedback-jefe" rows="3" placeholder="Escriba aquí los compromisos, fortalezas y áreas de mejora..." required></textarea>
+                         </div>
+
+                         <button type="submit" class="btn btn-primary">Registrar y Enviar Evaluación</button>
+                     </form>
+                 </div>
+             </div>
+
+             <!-- Tabla de Evaluaciones del Ciclo -->
+             <div class="glass-card" style="margin-top: 30px;">
+                 <div class="card-title">Evaluaciones del Ciclo</div>
+                 <div class="table-wrapper">
+                     <table>
+                         <thead>
+                             <tr>
+                                 <th>Colaborador</th>
+                                 <th>Ciclo</th>
+                                 <th>C. Blandas</th>
+                                 <th>Cumplimiento Metas</th>
+                                 <th>Puntualidad</th>
+                                 <th>Nota Final</th>
+                                 <th>Estado</th>
+                             </tr>
+                         </thead>
+                         <tbody id="table-evaluations-admin-body">
+                             <!-- Inyectado dinámicamente -->
+                         </tbody>
+                     </table>
+                 </div>
+             </div>
+         </div>
+
+         <!-- PANEL COLABORADOR: MIS EVALUACIONES -->
+         <div id="evaluations-colab-panel" style="display: none;">
+             <div class="glass-card">
+                 <div class="card-title">Mis Evaluaciones de Desempeño</div>
+                 <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                     Haga clic en una evaluación completada para ver el feedback, agregar sus comentarios y firmar el documento de conformidad.
+                 </p>
+                 <div id="colaborador-evals-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                     <!-- Inyectado dinámicamente -->
+                 </div>
+             </div>
+
+             <!-- Panel de Firma del Colaborador (Detalle) -->
+             <div id="eval-colab-detail-card" style="display: none;" class="glass-card">
+                 <div style="border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 20px;">
+                     <h3 id="eval-detail-title" style="font-weight: 700; font-size: 1.2rem; color: var(--text-primary);">Evaluación de Desempeño</h3>
+                     <button class="btn btn-secondary" id="btn-back-to-evals" style="font-size: 0.75rem; padding: 4px 10px; margin-top: 8px;">&larr; Volver</button>
+                 </div>
+
+                 <!-- Indicadores Numéricos -->
+                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                     <div style="background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 15px; text-align: center;">
+                         <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); display: block; text-transform: uppercase;">Competencias Blandas</span>
+                         <span id="eval-detail-blandas" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">0.0 / 5.0</span>
+                     </div>
+                     <div style="background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 15px; text-align: center;">
+                         <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); display: block; text-transform: uppercase;">Cumplimiento de Metas</span>
+                         <span id="eval-detail-metas" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">0.0 / 5.0</span>
+                     </div>
+                     <div style="background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 15px; text-align: center;">
+                         <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); display: block; text-transform: uppercase;">Puntualidad</span>
+                         <span id="eval-detail-puntualidad" style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">0.0 / 5.0</span>
+                     </div>
+                     <div style="background-color: var(--accent-light); border-radius: var(--radius-md); padding: 15px; text-align: center; border: 1px dashed var(--accent);">
+                         <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent); display: block; text-transform: uppercase;">Calificación Final</span>
+                         <span id="eval-detail-final" style="font-size: 1.7rem; font-weight: 800; color: var(--accent);">0.0 / 5.0</span>
+                     </div>
+                 </div>
+
+                 <!-- Feedback del Jefe -->
+                 <div style="background-color: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border); margin-bottom: 25px;">
+                     <label style="font-weight: 700; display: block; margin-bottom: 8px;">Feedback y Plan de Mejora del Evaluador:</label>
+                     <p id="eval-detail-feedback" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); text-align: justify; white-space: pre-wrap;"></p>
+                 </div>
+
+                 <!-- Comentarios y Firma Canvas del Colaborador -->
+                 <div id="eval-signature-section" style="display: flex; flex-direction: column; gap: 20px;">
+                     <div class="form-group">
+                         <label for="eval-colab-comments">Comentarios o descargos del Colaborador</label>
+                         <textarea id="eval-colab-comments" rows="3" placeholder="Escriba aquí sus comentarios, compromisos o descargos respecto a la calificación..."></textarea>
+                         <div id="eval-colab-comments-view" style="display: none; background-color: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); font-style: italic; color: var(--text-secondary); white-space: pre-wrap;"></div>
+                     </div>
+
+                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 10px;" class="form-grid">
+                         <!-- Lienzo de Firma Digital -->
+                         <div style="display: flex; flex-direction: column; align-items: center;">
+                             <label style="font-weight: 600; margin-bottom: 8px; align-self: flex-start;">Firma Digital de Aceptación/Conformidad <span style="color: var(--danger);">*</span></label>
+                             <div style="position: relative; width: 100%; max-width: 350px; height: 130px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: var(--bg-primary); overflow: hidden; cursor: crosshair;">
+                                 <canvas id="eval-colab-canvas" width="350" height="130" style="display: block; width: 100%; height: 100%;"></canvas>
+                                 <img id="eval-colab-firma-img" style="display: none; width: 100%; height: 100%; object-fit: contain; background-color: #ffffff;">
+                             </div>
+                             <button type="button" class="btn btn-secondary" id="btn-clear-eval-canvas" style="font-size: 0.75rem; padding: 6px 12px; margin-top: 8px;">Limpiar Firma</button>
+                         </div>
+                         <div style="display: flex; align-items: flex-end; justify-content: flex-end;">
+                             <button class="btn btn-primary" id="btn-submit-eval-signature" style="height: 50px; padding: 0 30px; font-weight: 700;">Firmar y Concluir Evaluación</button>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </section>
+
+      <!-- ================= MÓDULO 10: CONSTANCIAS LABORALES (NUEVO) ================= -->
+      <section id="view-certificates" class="page">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto;" class="certificates-grid">
+              
+              <!-- Card 1: Generar Constancia Laboral -->
+              <div class="glass-card" style="margin: 0; width: 100%;">
+                  <div class="card-title">
+                      <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                      <span>Generar Constancia Laboral</span>
+                  </div>
+                  <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                      Ingrese su documento de identidad y los datos requeridos para generar su certificación de trabajo oficial.
+                  </p>
+                  
+                  <form id="form-generar-constancia" style="display: flex; flex-direction: column; gap: 16px;">
+                      <div class="form-group">
+                          <label for="cert-cedula">Documento de Identidad (Cédula) <span style="color: var(--danger);">*</span></label>
+                          <input type="number" id="cert-cedula" placeholder="Ej: 10102020" required style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;">
+                      </div>
+                      
+                      <div class="form-group">
+                          <label for="cert-dirigido">Dirigido a <span style="color: var(--danger);">*</span></label>
+                          <input type="text" id="cert-dirigido" placeholder="Ej: A quien pueda interesar / Bancolombia" required style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;">
+                      </div>
+                      
+                      <div class="form-group">
+                          <label for="cert-incluir-salario">¿Incluir Información Salarial? <span style="color: var(--danger);">*</span></label>
+                          <select id="cert-incluir-salario" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                              <option value="si" selected>Sí, incluir salario en la constancia</option>
+                              <option value="no">No, omitir información de salario</option>
+                          </select>
+                      </div>
+                      
+                      <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; font-weight: 700; margin-top: 10px;">
+                          Generar y Exportar a PDF / Imprimir
+                      </button>
+                  </form>
+              </div>
+
+              <!-- Card 2: Descargar Constancia de Nómina (Comprobante de Pago) -->
+              <div class="glass-card" style="margin: 0; width: 100%;">
+                  <div class="card-title">
+                      <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      <span>Descargar Constancia de Nómina</span>
+                  </div>
+                  <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                      Ingrese su documento de identidad y seleccione el mes correspondiente para generar y descargar su comprobante/constancia de nómina.
+                  </p>
+                  
+                  <form id="form-descargar-nomina" style="display: flex; flex-direction: column; gap: 16px;">
+                      <div class="form-group">
+                          <label for="cert-nomina-cedula">Documento de Identidad (Cédula) <span style="color: var(--danger);">*</span></label>
+                          <input type="number" id="cert-nomina-cedula" placeholder="Ej: 10102020" required style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;">
+                      </div>
+                      
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                          <div class="form-group">
+                              <label for="cert-nomina-mes">Mes <span style="color: var(--danger);">*</span></label>
+                              <select id="cert-nomina-mes" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                                  <option value="0">Enero</option>
+                                  <option value="1">Febrero</option>
+                                  <option value="2">Marzo</option>
+                                  <option value="3">Abril</option>
+                                  <option value="4">Mayo</option>
+                                  <option value="5">Junio</option>
+                                  <option value="6">Julio</option>
+                                  <option value="7">Agosto</option>
+                                  <option value="8">Septiembre</option>
+                                  <option value="9">Octubre</option>
+                                  <option value="10">Noviembre</option>
+                                  <option value="11">Diciembre</option>
+                              </select>
+                          </div>
+                          
+                          <div class="form-group">
+                              <label for="cert-nomina-anio">Año <span style="color: var(--danger);">*</span></label>
+                              <select id="cert-nomina-anio" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                                  <option value="2026" selected>2026</option>
+                                  <option value="2025">2025</option>
+                                  <option value="2024">2024</option>
+                              </select>
+                          </div>
+                      </div>
+                      
+                      <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; font-weight: 700; margin-top: 10px;">
+                          Descargar Constancia de Nómina / Comprobante
+                      </button>
+                  </form>
+              </div>
+          </div>
+      </section>
+
+         </div>
+     </main>
+ 
+     <!-- Contenedor para notificaciones flotantes -->
+     <div class="toast-container" id="toast-container"></div>
+ 
+     <!-- MODALES DE ALERTA INTERACTIVOS (REGLAS DE RETARDOS) -->
+     <!-- Modal 1: Alerta de Llegada Tarde (Regla 3.1) -->
+     <div id="modal-tardiness" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+         <div class="glass-card" style="border: 2px solid var(--warning); max-width: 450px; width: 90%; text-align: center; padding: 30px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg);">
+             <div style="color: var(--warning); margin-bottom: 15px;">
+                 <svg style="width: 60px; height: 60px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+             </div>
+             <h3 style="font-weight: 700; margin-bottom: 10px; font-size: 1.25rem;">Llegada Tarde Registrada</h3>
+             <p id="modal-tardiness-msg" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">Se ha registrado un RETARDO en su marcación de ingreso.</p>
+             <button class="btn btn-primary" id="btn-close-tardiness" style="width: 100%;">Entendido</button>
+         </div>
+     </div>
+ 
+     <!-- Modal 2: Alerta Crítica de Reincidencia Semanal (Regla 3.2) -->
+     <div id="modal-critical" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2001; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+         <div class="glass-card" style="border: 2px solid var(--danger); max-width: 450px; width: 90%; text-align: center; padding: 30px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg);">
+             <div style="color: var(--danger); margin-bottom: 15px;">
+                 <svg style="width: 60px; height: 60px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+             </div>
+             <h3 style="font-weight: 700; color: var(--danger); margin-bottom: 10px; font-size: 1.25rem;">Alerta Crítica de Reincidencia</h3>
+             <p id="modal-critical-msg" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">Alerta Crítica: Ha alcanzado su tercer llegada tarde en la misma semana calendaría.</p>
+             <button class="btn btn-danger" id="btn-close-critical" style="width: 100%;">Aceptar Notificación</button>
+         </div>
+     </div>
+
+     <!-- Modal 3: Detalle del Documento Creado (Recibo Imprimible) -->
+     <div id="modal-document-detail" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2002; align-items:center; justify-content:center; backdrop-filter:blur(5px); padding: 20px;">
+         <div class="glass-card" style="max-width: 650px; width: 100%; padding: 25px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg); max-height: 90vh; overflow-y: auto;">
+             
+             <!-- Recibo/Documento -->
+             <div id="document-receipt-content" style="background-color:#ffffff; color:#000000; padding: 30px; border: 1px solid #ccc; border-radius: 4px; font-family:'Courier New', monospace; font-size: 0.9rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                 <!-- Encabezado corporativo -->
+                 <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px;">
+                     <h2 style="font-weight: 700; margin: 0; font-size:1.3rem; letter-spacing:1px; color:#000;">ANTIGRAVITY</h2>
+                     <div style="font-size: 0.75rem; color: #555; margin-top: 5px;">SISTEMA DE ASISTENCIA Y TIEMPO</div>
+                     <div style="font-size: 0.75rem; color: #555;">NIT: 901.442.118-9 | MEDELLÍN, COLOMBIA</div>
+                 </div>
+                 
+                 <!-- Título del documento -->
+                 <div style="text-align: center; font-weight: 700; font-size: 1rem; margin-bottom: 20px; text-transform: uppercase;" id="doc-receipt-title">
+                     CONSTANCIA DE REGISTRO
+                 </div>
+
+                 <!-- Información del Documento -->
+                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; color: #000000;">
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700; width: 35%;">CÓDIGO DOC:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-id">DOC-000000</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">FECHA EMISIÓN:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-emision">2026-06-17</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">ESTADO ACTUAL:</td>
+                         <td style="padding: 4px 0; font-weight: 700;" id="doc-receipt-status">PENDIENTE</td>
+                     </tr>
+                 </table>
+
+                 <!-- Información del Colaborador -->
+                 <div style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase; color: #000000;">
+                     DATOS DEL COLABORADOR
+                 </div>
+                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; color: #000000;">
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700; width: 35%;">NOMBRE:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-colab-nombre">Juan Fernando Restrepo</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">CÉDULA:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-colab-cedula">10102020</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">CONTACTO:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-colab-contacto">3115556677</td>
+                     </tr>
+                 </table>
+
+                 <!-- Detalle de Solicitud -->
+                 <div style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase; color: #000000;">
+                     DETALLE DE LA SOLICITUD
+                 </div>
+                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; color: #000000;">
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700; width: 35%;">CATEGORÍA:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-category">Permiso</td>
+                     </tr>
+                     <tr id="doc-receipt-row-permiso">
+                         <td style="padding: 4px 0; font-weight: 700;">TIPO/DETALLE:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-permiso-detail">Médico</td>
+                     </tr>
+                     <tr id="doc-receipt-row-rango">
+                         <td style="padding: 4px 0; font-weight: 700;">PERIODO / HORAS:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-period">08:00 - 12:00</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">CANT. SOLICITADA:</td>
+                         <td style="padding: 4px 0; font-weight: 700; color: #000;" id="doc-receipt-total">4.0h</td>
+                     </tr>
+                 </table>
+
+                 <!-- Observaciones -->
+                 <div style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase; color: #000000;">
+                     OBSERVACIONES
+                 </div>
+                 <div style="font-size: 0.8rem; line-height: 1.5; margin-bottom: 30px; word-wrap: break-word; min-height: 40px; color: #000000;" id="doc-receipt-obs">
+                     Cita odontológica de control.
+                 </div>
+
+                 <!-- Firmas -->
+                 <table style="width: 100%; margin-top: 30px; font-size: 0.75rem; text-align: center; color: #000000;">
+                     <tr>
+                         <td style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">
+                             Firma del Colaborador
+                         </td>
+                         <td style="width: 10%;"></td>
+                         <td style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">
+                             Autorización / Administración
+                         </td>
+                     </tr>
+                 </table>
+             </div>
+
+             <!-- Controles del Modal -->
+             <div style="display: flex; gap: 10px; margin-top: 20px;">
+                 <button class="btn btn-secondary" id="btn-close-doc-detail" style="flex-grow: 1;">Cerrar</button>
+                 <button class="btn btn-primary" id="btn-print-doc" style="flex-grow: 1;">Imprimir / Guardar PDF</button>
+             </div>
+
+         </div>
+     </div>
+
+     <!-- Modal 4: Inicio de Sesión / Selección de Rol (Login) -->
+     <div id="modal-login-session" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2003; align-items:center; justify-content:center; backdrop-filter:blur(5px); padding: 20px;">
+         <div class="glass-card" style="max-width: 450px; width: 100%; padding: 30px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg); text-align: center;">
+             <div style="color: var(--accent); margin-bottom: 15px; display: flex; justify-content: center;">
+                 <svg style="width: 50px; height: 50px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+             </div>
+             <h3 style="font-weight: 700; margin-bottom: 8px; font-size: 1.25rem; color: var(--text-primary);">Control de Acceso / Sesión</h3>
+             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                 Seleccione el perfil de usuario con el que desea interactuar en el sistema:
+             </p>
+
+             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                 <label for="login-user-select" style="font-weight: 600; margin-bottom: 6px; display: block; font-size: 0.8rem; color: var(--text-secondary);">Seleccionar Usuario</label>
+                 <select id="login-user-select" style="width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none; font-size: 0.9rem;">
+                     <option value="ADMINISTRADOR">Administrador Global (Sistema)</option>
+                     <optgroup label="Jefes Inmediatos (Admin)" id="login-group-jefes">
+                         <!-- Poblado dinámicamente -->
+                     </optgroup>
+                     <optgroup label="Colaboradores" id="login-group-colabs">
+                         <!-- Poblado dinámicamente -->
+                     </optgroup>
+                 </select>
+             </div>
+
+             <div class="form-group" id="login-password-container" style="text-align: left; margin-bottom: 20px; display: none;">
+                 <label for="login-password-input" style="font-weight: 600; margin-bottom: 6px; display: block; font-size: 0.8rem; color: var(--text-secondary);">Contraseña de Acceso <span style="color: var(--danger);">*</span></label>
+                 <input type="password" id="login-password-input" placeholder="Ingrese su contraseña" style="width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none; font-size: 0.9rem;">
+             </div>
+
+             <div style="display: flex; gap: 10px; width: 100%;">
+                 <button class="btn btn-secondary" id="btn-close-login" style="flex-grow: 1; height: 42px;">Cancelar</button>
+                 <button class="btn btn-primary" id="btn-submit-login" style="flex-grow: 1; font-weight: 600; height: 42px;">Iniciar Sesión</button>
+             </div>
+         </div>
+     </div>
+
+     <!-- Modal 5: Importar Acta Disciplinaria Física (Scanned) -->
+     <div id="modal-import-acta" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2003; align-items:center; justify-content:center; backdrop-filter:blur(5px); padding: 20px;">
+         <div class="glass-card" style="max-width: 500px; width: 100%; padding: 30px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg); text-align: left;">
+             <h3 style="font-weight: 700; margin-bottom: 15px; font-size: 1.25rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                 <svg style="width: 24px; height: 24px; color: var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                 Importar Acta Disciplinaria Física
+             </h3>
+             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                 Registre los datos del colaborador y cargue la imagen digitalizada del acta física.
+             </p>
+
+             <form id="form-import-acta">
+                 <div class="form-group" style="margin-bottom: 16px;">
+                     <label for="import-acta-colab" style="font-weight: 600; margin-bottom: 6px; display: block;">Seleccionar Colaborador <span style="color: var(--danger);">*</span></label>
+                     <select id="import-acta-colab" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                         <!-- Poblado dinámicamente -->
+                     </select>
+                 </div>
+
+                 <div class="form-group" style="margin-bottom: 16px;">
+                     <label for="import-acta-fecha" style="font-weight: 600; margin-bottom: 6px; display: block;">Fecha de Emisión <span style="color: var(--danger);">*</span></label>
+                     <input type="date" id="import-acta-fecha" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                 </div>
+
+                 <div class="form-group" style="margin-bottom: 16px;">
+                     <label for="import-acta-falta" style="font-weight: 600; margin-bottom: 6px; display: block;">Tipo de Falta <span style="color: var(--danger);">*</span></label>
+                     <select id="import-acta-falta" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                         <option value="LEVE">Leve</option>
+                         <option value="GRAVE">Grave</option>
+                         <option value="MUY_GRAVE">Muy Grave</option>
+                     </select>
+                 </div>
+
+                 <div class="form-group" style="margin-bottom: 24px;">
+                     <label for="import-acta-file" style="font-weight: 600; margin-bottom: 6px; display: block;">Imagen del Acta Firmada (JPG/PNG) <span style="color: var(--danger);">*</span></label>
+                     <input type="file" id="import-acta-file" accept="image/*" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                 </div>
+
+                 <div style="display: flex; gap: 10px; width: 100%;">
+                     <button type="button" class="btn btn-secondary" id="btn-close-import" style="flex-grow: 1; height: 42px;">Cancelar</button>
+                     <button type="submit" class="btn btn-primary" style="flex-grow: 1; font-weight: 600; height: 42px;">Guardar e Importar</button>
+                 </div>
+             </form>
+         </div>
+     </div>
+
+     <!-- Modal para Visor de Fotos de Registro -->
+    <div id="modal-ver-foto" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);">
+        <div class="modal-content" style="background-color: var(--card-bg); margin: 5% auto; padding: 20px; border: 1px solid var(--card-border); width: 90%; max-width: 400px; border-radius: var(--radius-md); position: relative; text-align: center;">
+            <span class="close-modal" onclick="document.getElementById('modal-ver-foto').style.display='none'" style="position: absolute; top: 10px; right: 20px; color: var(--text-secondary); font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3 style="margin-bottom: 15px; color: var(--text-primary);">Captura Facial</h3>
+            <img id="visor-foto-img" src="" alt="Captura Facial" style="width: 100%; max-width: 320px; border-radius: var(--radius-sm); border: 2px solid var(--sidebar-border); box-shadow: var(--shadow-md);">
+            <div id="visor-foto-info" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary);"></div>
+        </div>
+    </div>
+ 
+     <!-- Scripts de la Aplicación -->
+    <script src="{% static 'js/db.js' %}"></script>
+    <script src="{% static 'js/login.js' %}"></script>
+    <script src="{% static 'js/qr.js' %}"></script>
+    <script src="{% static 'js/admin.js' %}"></script>
+    <script src="{% static 'js/payroll.js' %}"></script>
+    <script src="{% static 'js/evaluations.js' %}"></script>
+    <script src="{% static 'js/disciplinary.js' %}"></script>
+    <script src="{% static 'js/certificates.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

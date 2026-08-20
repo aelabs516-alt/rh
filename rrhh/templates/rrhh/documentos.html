@@ -1,0 +1,85 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+<section id="view-documents" class="page">
+                 
+                 <!-- Filtros y Búsqueda -->
+                 <div class="glass-card" style="margin-bottom: 20px;">
+                     <div class="card-title" style="color: var(--accent);">
+                         <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                         <span>Filtros de Búsqueda - Historial de Documentos</span>
+                     </div>
+                     <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; align-items: flex-end;">
+                         <div class="form-group">
+                             <label for="doc-search-input">Colaborador (Nombre o Cédula)</label>
+                             <input type="text" id="doc-search-input" placeholder="Buscar por nombre o cédula...">
+                         </div>
+                         <div class="form-group">
+                             <label for="doc-filter-category">Categoría</label>
+                             <select id="doc-filter-category">
+                                 <option value="todos" selected>Todas</option>
+                                 <option value="permiso">Permisos y Ausencias</option>
+                                 <option value="vacaciones">Vacaciones</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <label for="doc-filter-state">Estado</label>
+                             <select id="doc-filter-state">
+                                 <option value="todos" selected>Todos</option>
+                                 <option value="PENDIENTE">Pendiente</option>
+                                 <option value="AUTORIZADA">Autorizada</option>
+                                 <option value="RECHAZADA">Rechazada</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <button type="button" class="btn btn-secondary" id="btn-clear-doc-filters" style="width: 100%; height: 45px;">Limpiar Filtros</button>
+                         </div>
+                     </div>
+                 </div>
+
+                 <!-- Tabla de Documentos Creados -->
+                 <div class="glass-card">
+                     <div class="card-title">
+                         <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                         <span>Historial de Solicitudes y Documentos Creados</span>
+                     </div>
+                     <div class="table-wrapper">
+                         <table>
+                             <thead>
+                                 <tr>
+                                     <th>Cod. Doc</th>
+                                     <th>Colaborador (Cédula)</th>
+                                     <th>Fecha Registro</th>
+                                     <th>Categoría</th>
+                                     <th>Cantidad Solicitada</th>
+                                 </tr>
+                             </thead>
+                                  <tbody id="table-documents-body">
+                                    {% for doc in documentos %}
+                                    <tr>
+                                        <td>{{ doc.id }}</td>
+                                        <td>{{ doc.colaborador.nombre }} ({{ doc.colaborador.cedula }})</td>
+                                        <td>{{ doc.fecha_carga|date:"Y-m-d" }}</td>
+                                        <td>{{ doc.tipo_documento }}</td>
+                                        <td>
+                                            {% if doc.archivo %}
+                                            <a href="{{ doc.archivo.url }}" target="_blank" class="btn btn-secondary btn-sm">Ver Archivo</a>
+                                            {% else %}
+                                            N/A
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" style="text-align: center;">No hay documentos registrados.</td>
+                                    </tr>
+                                    {% endfor %}
+                                  </tbody>
+                          </table>
+                      </div>
+                  </div>
+
+              </section>
+
+              <!-- ================= MÓDULO 8: COLILLAS DE PAGO ================= -->
+              {% endblock %}

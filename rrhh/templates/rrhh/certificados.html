@@ -1,0 +1,120 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block page_title %}Constancias Laborales{% endblock %}
+{% block content %}
+<section id="view-certificates" class="page">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto;" class="certificates-grid">
+              
+              <!-- Card 1: Generar Constancia Laboral -->
+              <div class="glass-card" style="margin: 0; width: 100%;">
+                  <div class="card-title">
+                      <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                      <span>Generar Constancia Laboral</span>
+                  </div>
+                  <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                      Ingrese su documento de identidad y los datos requeridos para generar su certificación de trabajo oficial.
+                  </p>
+                  
+                  <form id="form-generar-constancia" style="display: flex; flex-direction: column; gap: 16px;">
+                      <div class="form-group">
+                          <label for="cert-cedula">Documento de Identidad (Cédula) <span style="color: var(--danger);">*</span></label>
+                          <input type="number" id="cert-cedula" placeholder="Ej: 10102020" required {% if request.session.rol == 'COLABORADOR' %}value="{{ request.session.cedula }}" readonly style="opacity: 0.7;"{% endif %} style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;">
+                      </div>
+                      
+                      <div class="form-group">
+                          <label for="cert-dirigido">Dirigido a <span style="color: var(--danger);">*</span></label>
+                          <input type="text" id="cert-dirigido" placeholder="Ej: A quien pueda interesar / Bancolombia" required style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;">
+                      </div>
+                      
+                      <div class="form-group">
+                          <label for="cert-incluir-salario">¿Incluir Información Salarial? <span style="color: var(--danger);">*</span></label>
+                          <select id="cert-incluir-salario" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                              <option value="si" selected>Sí, incluir salario en la constancia</option>
+                              <option value="no">No, omitir información de salario</option>
+                          </select>
+                      </div>
+                      
+                      <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; font-weight: 700; margin-top: 10px;">
+                          Generar y Exportar a PDF / Imprimir
+                      </button>
+                  </form>
+              </div>
+
+              <!-- Card 2: Descargar Constancia de Nómina (Comprobante de Pago) -->
+              <div class="glass-card" style="margin: 0; width: 100%;">
+                  <div class="card-title">
+                      <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      <span>Descargar Constancia de Nómina</span>
+                  </div>
+                  <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                      Ingrese su documento de identidad y seleccione el mes correspondiente para generar y descargar su comprobante/constancia de nómina.
+                  </p>
+                  
+                  <form id="form-descargar-nomina" style="display: flex; flex-direction: column; gap: 16px;">
+                      <div class="form-group">
+                          <label for="cert-nomina-cedula">Documento de Identidad (Cédula) <span style="color: var(--danger);">*</span></label>
+                          <input type="number" id="cert-nomina-cedula" placeholder="Ej: 10102020" required {% if request.session.rol == 'COLABORADOR' %}value="{{ request.session.cedula }}" readonly style="opacity: 0.7;"{% endif %} style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;">
+                      </div>
+                      
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                          <div class="form-group">
+                              <label for="cert-nomina-mes">Mes <span style="color: var(--danger);">*</span></label>
+                              <select id="cert-nomina-mes" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                                  <option value="0">Enero</option>
+                                  <option value="1">Febrero</option>
+                                  <option value="2">Marzo</option>
+                                  <option value="3">Abril</option>
+                                  <option value="4">Mayo</option>
+                                  <option value="5">Junio</option>
+                                  <option value="6">Julio</option>
+                                  <option value="7">Agosto</option>
+                                  <option value="8">Septiembre</option>
+                                  <option value="9">Octubre</option>
+                                  <option value="10">Noviembre</option>
+                                  <option value="11">Diciembre</option>
+                              </select>
+                          </div>
+                          
+                          <div class="form-group">
+                              <label for="cert-nomina-anio">Año <span style="color: var(--danger);">*</span></label>
+                              <select id="cert-nomina-anio" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                                  <option value="2026" selected>2026</option>
+                                  <option value="2025">2025</option>
+                                  <option value="2024">2024</option>
+                              </select>
+                          </div>
+                      </div>
+                      
+                      <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; font-weight: 700; margin-top: 10px;">
+                          Descargar Constancia de Nómina / Comprobante
+                      </button>
+                  </form>
+              </div>
+          </div>
+      </section>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const formConstancia = document.getElementById('form-generar-constancia');
+            if (formConstancia) {
+                formConstancia.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const ced = document.getElementById('cert-cedula').value;
+                    window.open('/rrhh/pdf/constancia/' + ced + '/', '_blank');
+                });
+            }
+
+            const formNomina = document.getElementById('form-descargar-nomina');
+            if (formNomina) {
+                formNomina.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    alert('Por favor consulte la sección de Nómina para descargar comprobantes subidos.');
+                });
+            }
+        });
+      </script>
+      
+{% block extra_js %}
+<script src="{% static 'js/certificates.js' %}?v=4"></script>
+{% endblock extra_js %}
+{% endblock %}

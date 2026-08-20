@@ -1,0 +1,173 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block page_title %}Colillas de Pago{% endblock %}
+{% block content %}
+<section id="view-payroll" class="page">
+                  <!-- PANEL ADMINISTRADOR / RRHH: CARGA DE COLILLAS -->
+                  <div id="payroll-admin-panel" style="display: block;">
+                      <div class="glass-card">
+                          <div class="card-title">
+                              <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                              <span>Carga Masiva de Colillas de Pago</span>
+                          </div>
+                          <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:15px;">
+                              Seleccione o arrastre los documentos PDF correspondientes a las colillas de pago. 
+                              <strong>Formato del nombre del archivo:</strong> Cedula_Mes_Año.pdf (Ej: 12345678_07_2026.pdf).
+                          </p>
+                          
+                          <div class="form-group" style="margin-bottom: 16px; border: 2px dashed var(--accent); padding: 40px; text-align: center; border-radius: var(--radius-md); background: rgba(59, 130, 246, 0.05); cursor: pointer; transition: all 0.3s;" id="payroll-drop-zone">
+                              <label for="payroll-pdf-input" style="cursor: pointer; display: block;">
+                                  <svg style="width: 48px; height: 48px; color: var(--accent); margin: 0 auto 10px auto;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                  <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem; margin-bottom: 5px;">Haga clic para seleccionar PDFs</div>
+                                  <div style="font-size: 0.85rem; color: var(--text-secondary);">o arrastre y suelte los archivos aquí</div>
+                              </label>
+                              <input type="file" id="payroll-pdf-input" multiple accept=".pdf" style="display: none;">
+                          </div>
+                          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                              <span id="payroll-file-count" style="font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">0 archivos seleccionados</span>
+                              <button class="btn btn-primary" id="btn-import-payroll-pdf">Procesar e Importar Colillas</button>
+                          </div>
+                      </div>
+
+                      <!-- Historial de Colillas Cargadas -->
+                      <div class="glass-card">
+                          <div class="card-title">Historial de Colillas Cargadas</div>
+                          <div class="table-wrapper">
+                              <table>
+                                  <thead>
+                                      <tr>
+                                          <th>Cédula Colaborador</th>
+                                          <th>Nombre</th>
+                                          <th>Mes</th>
+                                          <th>Año</th>
+                                          <th>Documento</th>
+                                          <th>Acciones</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody id="table-payroll-history-body">
+                                      <!-- Inyectado dinámicamente -->
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- PANEL COLABORADOR: AUTO-SERVICIO -->
+                  <div id="payroll-colab-panel" style="display: none;">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" class="payroll-colab-grid">
+                          
+                          <!-- Buscar y Descargar Comprobantes -->
+                          <div class="glass-card">
+                              <div class="card-title">Mis Colillas de Pago</div>
+                              <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                                  Busque su desprendible de pago seleccionando el período requerido.
+                              </p>
+                              
+                              <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+                                  <div class="form-group">
+                                      <label for="payroll-search-year">Año</label>
+                                      <select id="payroll-search-year">
+                                          <option value="2026" selected>2026</option>
+                                          <option value="2025">2025</option>
+                                          <option value="2024">2024</option>
+                                      </select>
+                                  </div>
+                                  <div class="form-group">
+                                      <label for="payroll-search-month">Mes</label>
+                                      <select id="payroll-search-month">
+                                          <option value="0">Enero</option>
+                                          <option value="1">Febrero</option>
+                                          <option value="2">Marzo</option>
+                                          <option value="3">Abril</option>
+                                          <option value="4">Mayo</option>
+                                          <option value="5" selected>Junio</option>
+                                          <option value="6">Julio</option>
+                                          <option value="7">Agosto</option>
+                                          <option value="8">Septiembre</option>
+                                          <option value="9">Octubre</option>
+                                          <option value="10">Noviembre</option>
+                                          <option value="11">Diciembre</option>
+                                      </select>
+                                  </div>
+                              </div>
+                              <button class="btn btn-primary" id="btn-search-payslip" style="width: 100%;">Buscar Colilla de Pago</button>
+                          </div>
+
+                          <!-- Autogeneración de Certificaciones Laborales -->
+                          <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                              <div>
+                                  <div class="card-title">Certificaciones Laborales</div>
+                                  <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px; line-height: 1.5;">
+                                      Configure y descargue su certificación laboral firmada digitalmente de forma instantánea.
+                                  </p>
+                                  <div id="payroll-cert-block-msg" style="display: none; padding: 12px; border-radius: var(--radius-md); background-color: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); font-size: 0.8rem; font-weight: 600; margin-bottom: 20px;">
+                                      ⚠️ Descarga bloqueada: Su estado de expediente actual es INACTIVO. Póngase en contacto con Recursos Humanos.
+                                  </div>
+                                  
+                                  <div id="payroll-cert-fields-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                                      <div class="form-group">
+                                          <label for="payroll-colab-cert-dirigido" style="font-size: 0.8rem; font-weight: 600;">Dirigido a <span style="color: var(--danger);">*</span></label>
+                                          <input type="text" id="payroll-colab-cert-dirigido" placeholder="Ej: Bancolombia S.A." required style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;">
+                                      </div>
+                                      <div class="form-group">
+                                          <label for="payroll-colab-cert-incluir-salario" style="font-size: 0.8rem; font-weight: 600;">¿Incluir Información Salarial? <span style="color: var(--danger);">*</span></label>
+                                          <select id="payroll-colab-cert-incluir-salario" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                                              <option value="si" selected>Sí, incluir salario en la constancia</option>
+                                              <option value="no">No, omitir información de salario</option>
+                                          </select>
+                                      </div>
+                                  </div>
+                              </div>
+                              <button class="btn btn-primary" id="btn-generate-work-cert" style="width: 100%; height: 50px; font-weight: 700;">Generar Certificación Laboral</button>
+                          </div>
+                      </div>
+
+
+                  </div>
+              </section>
+
+     <!-- ================= MÓDULO 9: EVALUACIÓN DE DESEMPEÑO (NUEVO) ================= -->
+     
+            <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const formUpload = document.getElementById('form-upload-nomina');
+                if (formUpload) {
+                    formUpload.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        
+                        const formData = new FormData();
+                        formData.append('accion', 'subir_colilla');
+                        formData.append('cedula', document.getElementById('admin-nomina-colab').value);
+                        formData.append('mes', document.getElementById('admin-nomina-mes').value);
+                        formData.append('anio', document.getElementById('admin-nomina-anio').value);
+                        
+                        const fileInput = document.getElementById('admin-nomina-file');
+                        if (fileInput.files.length > 0) {
+                            formData.append('archivo', fileInput.files[0]);
+                        }
+                        
+                        try {
+                            const response = await fetch('{% url "nomina_colillas" %}', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                alert(result.message);
+                                window.location.reload();
+                            } else {
+                                alert('Error: ' + result.message);
+                            }
+                        } catch (error) {
+                            alert('Error de red: ' + error);
+                        }
+                    });
+                }
+            });
+            </script>
+
+
+{% block extra_js %}
+<script src="{% static 'js/payroll.js' %}?v=4"></script>
+{% endblock extra_js %}
+{% endblock %}

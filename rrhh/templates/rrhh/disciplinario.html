@@ -1,0 +1,296 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block page_title %}Actas Disciplinarias{% endblock %}
+{% block content %}
+<section id="view-disciplinary" class="page">
+                <!-- VISTA ADMINISTRADOR -->
+                <div id="disciplinary-admin-view" style="display: none;">
+                    <!-- Panel de Escáner y Alertas de Infracción -->
+                    <div class="glass-card" style="border: 2px solid var(--warning); margin-bottom: 24px;">
+                        <div class="card-title" style="color: var(--warning); display: flex; align-items: center; gap: 8px;">
+                            <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <span>Detección Automática de Actas Disciplinarias (Semanal)</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 15px;">
+                            El sistema detecta automáticamente a los colaboradores con 4 o más retardos semanales que aún no tienen un acta disciplinaria generada para ese periodo.
+                        </p>
+                        <div id="disciplinary-warnings-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Listado General de Actas -->
+                    <div class="glass-card">
+                        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <svg style="width:24px; height:24px; color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <span>Historial General de Actas Disciplinarias</span>
+                            </div>
+                            <button class="btn btn-primary" id="btn-import-acta" style="font-size: 0.8rem; padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+                                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                Importar Acta (Física)
+                            </button>
+                        </div>
+
+                        <!-- Filtros del Historial -->
+                        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 20px; margin-top: 15px; align-items: flex-end;">
+                            <div class="form-group">
+                                <label for="filter-acta-search">Buscar Colaborador (Nombre/Cédula)</label>
+                                <input type="text" id="filter-acta-search" placeholder="Ej: Diana Gómez...">
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-acta-falta">Tipo de Falta</label>
+                                <select id="filter-acta-falta">
+                                    <option value="all">Todas las Faltas</option>
+                                    <option value="LEVE">Leve</option>
+                                    <option value="GRAVE">Grave</option>
+                                    <option value="MUY_GRAVE">Muy Grave</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-acta-estado">Estado de Firma</label>
+                                <select id="filter-acta-estado">
+                                    <option value="all">Todos los Estados</option>
+                                    <option value="PENDIENTE_FIRMA">Pendiente Firma</option>
+                                    <option value="CONCLUIDA">Concluida</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-secondary" id="btn-clear-acta-filters" style="width: 100%; height: 42px;">Limpiar Filtros</button>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Actas -->
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Acta</th>
+                                        <th>Colaborador</th>
+                                        <th>Fecha Emisión</th>
+                                        <th>Tipo Falta</th>
+                                        <th>Retardos en Semana</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-actas-body">
+
+                                {% for acta in actas %}
+                                <tr>
+                                    <td>{{ acta.colaborador.nombre }} ({{ acta.colaborador.cedula }})</td>
+                                    <td>{{ acta.fecha_emision }}</td>
+                                    <td>
+                                        <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size:0.75rem; font-weight:600; 
+                                        background-color: {% if acta.tipo_falta == 'LEVE' %}var(--warning-light){% elif acta.tipo_falta == 'GRAVE' %}var(--accent-light){% else %}var(--danger-light){% endif %}; 
+                                        color: {% if acta.tipo_falta == 'LEVE' %}var(--warning){% elif acta.tipo_falta == 'GRAVE' %}var(--accent){% else %}var(--danger){% endif %};">
+                                            {{ acta.tipo_falta }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size:0.75rem; font-weight:600; 
+                                        background-color: {% if acta.estado == 'PENDIENTE_FIRMA' %}var(--warning-light){% else %}var(--success-light){% endif %}; 
+                                        color: {% if acta.estado == 'PENDIENTE_FIRMA' %}var(--warning){% else %}var(--success){% endif %};">
+                                            {{ acta.estado }}
+                                        </span>
+                                    </td>
+                                    <td style="display: flex; gap: 5px;">
+                                        {% if acta.estado == 'PENDIENTE_FIRMA' %}
+                                        <button class="btn btn-secondary btn-sm" onclick="alert('Funcionalidad de firmar pendiente')">Firmar (Colaborador)</button>
+                                        {% else %}
+                                        <a class="btn btn-primary btn-sm" href="{% url 'rrhh_generar_pdf' tipo='acta' id=acta.id %}" target="_blank" style="text-decoration:none; padding:4px 8px; display:inline-block;">Ver PDF</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">No hay actas disciplinarias registradas</td>
+                                </tr>
+                                {% endfor %}
+
+</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA COLABORADOR -->
+                <div id="disciplinary-colaborador-view" style="display: none;">
+                    <div id="disciplinary-colab-pending-alert" class="glass-card" style="border: 2px solid var(--danger); background-color: var(--danger-light); display: none; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: center; gap: 12px; color: var(--danger);">
+                            <svg style="width: 32px; height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h4 style="font-weight: 700; font-size: 1rem;">Atención: Acta Disciplinaria Pendiente</h4>
+                                <p style="font-size: 0.85rem; margin-top: 4px;">Tiene un proceso disciplinario abierto que requiere de su firma y descargos. Por favor revise el listado a continuación.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="card-title">Mis Actas Disciplinarias</div>
+                        <div id="colaborador-actas-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FORMULARIO DE DETALLE / FIRMA (COMPARTIDO) -->
+                <div id="disciplinary-form-container" style="display: none;">
+                    <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <h3 id="disciplinary-form-title" style="font-weight: 700; font-size: 1.25rem; color: var(--text-primary);">Acta Disciplinaria</h3>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn btn-secondary" id="btn-back-to-actas" style="font-size: 0.75rem; padding: 4px 10px;">&larr; Volver al Listado</button>
+                                    <button class="btn btn-primary" id="btn-print-acta" style="font-size: 0.75rem; padding: 4px 10px;">Imprimir PDF / Exportar</button>
+                                </div>
+                            </div>
+                            <img src="{% static 'images/logo.png' %}" alt="Logo Compañía" style="max-width: 120px; height: auto; display: block; border-radius: 4px;">
+                        </div>
+
+
+                        <!-- Panel de Vista Importada (Scanned Image) -->
+                        <div id="acta-imported-view" style="display: none; text-align: center; margin-bottom: 20px;">
+                            <div style="background-color: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border); margin-bottom: 20px; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div><strong>Colaborador:</strong> <span id="acta-imported-colab-name" style="font-weight:700;"></span></div>
+                                <div><strong>Fecha de Emisión:</strong> <span id="acta-imported-date"></span></div>
+                                <div><strong>Tipo de Falta:</strong> <span id="acta-imported-falta-badge"></span></div>
+                                <div><strong>Estado:</strong> <span class="badge badge-success">Concluida (Importada)</span></div>
+                            </div>
+                            <label style="font-weight: 600; margin-bottom: 10px; display: block; text-align: left; color: var(--text-primary);">Documento Digitalizado Cargado:</label>
+                            <div style="border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: #ffffff; padding: 10px; overflow: hidden; display: flex; justify-content: center; align-items: center; max-height: 700px;">
+                                <img id="acta-imported-img" style="max-width: 100%; height: auto; max-height: 650px; object-fit: contain; border-radius: 4px;">
+                            </div>
+                        </div>
+
+                        <!-- Campos Normales -->
+                        <div id="acta-normal-fields">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;" class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre del Colaborador</label>
+                                <input type="text" id="acta-form-nombre" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Cédula</label>
+                                <input type="text" id="acta-form-cedula" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Cargo</label>
+                                <input type="text" id="acta-form-cargo" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Área</label>
+                                <input type="text" id="acta-form-area" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de Acta</label>
+                                <input type="text" id="acta-form-fecha" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Decisión Empresa</label>
+                                <input type="text" id="acta-form-decision" readonly style="background-color: var(--bg-secondary); cursor: not-allowed; font-weight: 700; color: var(--danger);">
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Falta (Marcado Dinámico) -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="margin-bottom: 8px; display: block;">Tipo de Falta (Marcado Dinámico por Sistema)</label>
+                            <div style="display: flex; gap: 20px; background-color: var(--bg-secondary); padding: 12px 20px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: not-allowed; font-weight: 600; color: var(--text-primary);">
+                                    <input type="checkbox" id="acta-form-falta-leve" disabled style="transform: scale(1.15);">
+                                    <span>Leve (4 retardos semanales)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: not-allowed; font-weight: 600; color: var(--warning);">
+                                    <input type="checkbox" id="acta-form-falta-grave" disabled style="transform: scale(1.15);">
+                                    <span>Grave (5 retardos semanales o reincidente mes)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: not-allowed; font-weight: 600; color: var(--danger);">
+                                    <input type="checkbox" id="acta-form-falta-muygrave" disabled style="transform: scale(1.15);">
+                                    <span>Muy Grave (&ge; 6 retardos semanales)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Descripción Detallada del Hecho -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Descripción Detallada del Hecho</label>
+                            <div id="acta-form-descripcion" style="background-color: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border); font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); text-align: justify;">
+                                <!-- Texto dinámico -->
+                            </div>
+                        </div>
+
+                        <!-- Descargos del Colaborador -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="acta-form-descargos" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Descargos del Colaborador <span style="color: var(--danger);">*</span></span>
+                                <small id="acta-form-descargos-char-count" style="font-size:0.75rem; color:var(--text-secondary);">Mínimo 10 caracteres</small>
+                            </label>
+                            <textarea id="acta-form-descargos" rows="4" placeholder="Escriba aquí de manera detallada sus descargos y motivos de las demoras..." style="width: 100%; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); resize: vertical; line-height: 1.4; outline: none;"></textarea>
+                            <div id="acta-form-descargos-view" style="display: none; background-color: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border); font-style: italic; color: var(--text-secondary); text-align: justify; white-space: pre-wrap;">
+                                <!-- Descargos registrados en actas concluidas -->
+                            </div>
+                        </div>
+
+                        <!-- Panel de Firmas -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; border-top: 1px solid var(--card-border); padding-top: 24px;" class="form-grid">
+                            <!-- Firma Colaborador (Canvas interactivo o imagen base64) -->
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <label style="font-weight: 600; margin-bottom: 8px; align-self: flex-start;">Firma Digital del Colaborador <span style="color: var(--danger);">*</span></label>
+                                <div id="canvas-container" style="position: relative; width: 100%; max-width: 350px; height: 130px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: var(--bg-primary); overflow: hidden; cursor: crosshair;">
+                                    <canvas id="disciplinary-canvas" width="350" height="130" style="display: block; width: 100%; height: 100%;"></canvas>
+                                    <img id="acta-form-firma-img" style="display: none; width: 100%; height: 100%; object-fit: contain; background-color: #ffffff;">
+                                </div>
+                                <button type="button" class="btn btn-secondary" id="btn-clear-canvas" style="font-size: 0.75rem; padding: 6px 12px; margin-top: 8px;">Limpiar Firma</button>
+                            </div>
+
+                            <!-- Firma Jefe Inmediato (Vectorizada precargada) -->
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                                <label style="font-weight: 600; margin-bottom: 8px; align-self: flex-start;">Firma Autorizada Jefe Inmediato</label>
+                                <div style="width: 100%; max-width: 350px; height: 130px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background-color: #ffffff; display: flex; align-items: center; justify-content: center;" id="boss-signature-svg-container">
+                                    <!-- Inyectado dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón Enviar -->
+                        <div style="margin-top: 35px; text-align: right;" id="acta-submit-container">
+                            <button type="button" class="btn btn-primary" id="btn-submit-acta" style="font-weight: 600; padding: 12px 30px;">
+                                Enviar Descargos y Firmar Acta
+                            </button>
+                        </div>
+                        </div> <!-- Fin de #acta-normal-fields -->
+                    </div>
+                </div>
+            </section>
+
+
+
+            <!-- ================= MÓDULO 3: INGRESO O SALIDA (COLABORADOR) ================= -->
+            
+
+
+
+{% block extra_js %}
+<script>
+    window.DJANGO_COLABORADORES_DATA = {{ colaboradores_json|safe }};
+    window.DJANGO_ACTAS_DATA = {{ actas_json|safe }};
+    window.DJANGO_REGISTROS_DATA = {{ registros_json|safe }};
+    window.DJANGO_CONFIG_DATA = {{ config_json|safe }};
+    
+    window.obtenerColaboradores = function() { return window.DJANGO_COLABORADORES_DATA || []; };
+    window.obtenerActas = function() { return window.DJANGO_ACTAS_DATA || []; };
+    window.obtenerRegistros = function() { return window.DJANGO_REGISTROS_DATA || []; };
+    window.obtenerConfiguracion = function() { return window.DJANGO_CONFIG_DATA || {}; };
+</script>
+<script src="{% static 'js/disciplinary.js' %}?v=11"></script>
+<script>
+(function waitForDisciplinary() {
+    if (typeof inicializarDisciplinary === 'function') {
+        inicializarDisciplinary();
+    } else {
+        setTimeout(waitForDisciplinary, 50);
+    }
+})();
+</script>
+{% endblock extra_js %}
+{% endblock %}

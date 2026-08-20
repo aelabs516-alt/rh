@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Impresión de Documento</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #ddd; padding-bottom: 20px; }
+        .logo { max-width: 150px; margin-bottom: 10px; }
+        .title { font-size: 1.5rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .content { margin-bottom: 40px; }
+        .footer { text-align: center; font-size: 0.8rem; color: #777; border-top: 1px solid #ddd; padding-top: 20px; position: fixed; bottom: 40px; width: calc(100% - 80px); }
+        .signature-box { display: flex; justify-content: space-between; margin-top: 60px; }
+        .signature-line { border-top: 1px solid #333; width: 45%; text-align: center; padding-top: 5px; font-weight: bold; }
+        
+        @media print {
+            body { padding: 0; }
+            .no-print { display: none !important; }
+            @page { margin: 2cm; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="no-print" style="margin-bottom: 20px; text-align: center;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-size: 1rem; cursor: pointer; background-color: #0ea5e9; color: white; border: none; border-radius: 5px;">Imprimir / Guardar PDF</button>
+        <button onclick="window.close()" style="padding: 10px 20px; font-size: 1rem; cursor: pointer; background-color: #f43f5e; color: white; border: none; border-radius: 5px; margin-left: 10px;">Cerrar</button>
+    </div>
+
+    <div class="header">
+        <h1 class="title">Empresa Demo S.A.S</h1>
+        <p>NIT: 900.000.000-1 | Dirección: Calle Falsa 123 | Tel: 555-0123</p>
+    </div>
+
+    <div class="content">
+        {% if tipo == 'acta' %}
+            <h2 style="text-align: center; margin-bottom: 30px;">ACTA DISCIPLINARIA N° {{ acta.id|stringformat:"04d" }}</h2>
+            <p><strong>Fecha de Emisión:</strong> {{ acta.fecha }}</p>
+            <p><strong>Colaborador:</strong> {{ acta.colaborador.nombre }} (C.C. {{ acta.colaborador.cedula }})</p>
+            <p><strong>Tipo de Falta (Gravedad):</strong> {{ acta.gravedad }}</p>
+            <br>
+            <p><strong>Descripción de los Hechos:</strong></p>
+            <p style="text-align: justify; margin-bottom: 20px;">Por medio de la presente, la dirección de Recursos Humanos notifica el levantamiento de esta acta disciplinaria. Según nuestros registros, se ha incurrido en una falta clasificada como {{ acta.gravedad }}. Solicitamos al colaborador presentar sus respectivos descargos.</p>
+            <p><strong>Detalle:</strong> {{ acta.descripcion }}</p>
+            
+        {% elif tipo == 'constancia' %}
+            <h2 style="text-align: center; margin-bottom: 30px;">CERTIFICACIÓN LABORAL</h2>
+            <br>
+            <p style="text-align: justify;">La Dirección de Recursos Humanos de Empresa Demo S.A.S hace constar que el/la señor(a) <strong>{{ colab.nombre }}</strong>, identificado(a) con cédula de ciudadanía No. <strong>{{ colab.cedula }}</strong>, se encuentra actualmente laborando para nuestra compañía.</p>
+            <p style="text-align: justify;">Esta persona desempeña el cargo o rol de <strong>{{ colab.rol }}</strong> con un contrato vigente a la fecha de expedición de este documento.</p>
+            <p style="text-align: justify;">Estado del trabajador en el sistema: <strong>{{ colab.estado }}</strong>.</p>
+            <br><br>
+            <p>Se expide este certificado a solicitud del interesado, a los <strong>{% now "d" %} días del mes de {% now "F" %} de {% now "Y" %}</strong>.</p>
+        {% endif %}
+    </div>
+
+    <div class="signature-box">
+        <div class="signature-line">
+            Firma Empleador (RRHH)<br>
+            Empresa Demo S.A.S
+        </div>
+        <div class="signature-line">
+            {% if tipo == 'acta' %}Firma Colaborador (Aceptación){% else %}Firma Trabajador{% endif %}<br>
+            C.C. {% if tipo == 'acta' %}{{ acta.colaborador.cedula }}{% else %}{{ colab.cedula }}{% endif %}
+        </div>
+    </div>
+
+    <div class="footer">
+        Documento generado automáticamente por el Sistema de Marcación y RRHH. Verificación de integridad digital.
+    </div>
+</body>
+</html>

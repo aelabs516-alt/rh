@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Del Personal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- CSS Estilos -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3">
+    <!-- Chart.js CDN para gráficos analíticos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- Scripts Globales -->
+    <script src="{% static 'js/db.js' %}?v=5"></script>
+    <script src="{% static 'js/app.js' %}?v=5"></script>
+</head>
+<body>
+
+    <!-- SIDEBAR (Navegación Global) -->
+    <aside>
+        <div class="logo-container" style="display: flex; flex-direction: column; align-items: center; padding: 20px 10px; gap: 12px; border-bottom: 1px solid var(--sidebar-border);">
+            <!-- Logo TM (TECNOLOGÍA & MOVILIDAD) .png image -->
+            <img src="{% static 'images/logo.png' %}" alt="Tecnología & Movilidad" class="logo-img" style="max-width: 130px; height: auto; display: block; transition: var(--transition);">
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; text-align: center; font-family: 'Poppins', sans-serif; margin-top: 6px;">Gestión Del Personal</div>
+            <!-- Botón de Sesión Premium (Abajo del Logo) -->
+            <a href="{% url 'login' %}" style="text-decoration: none; width: 100%;">
+                <button class="theme-toggle" id="btn-session-modal" style="background-color: var(--bg-secondary); border: 1px solid var(--card-border); justify-content: flex-start; gap: 8px; padding: 8px 12px; margin-bottom: 0; width: 100%; cursor: pointer;">
+                    <!-- User Icon -->
+                    <svg style="width: 16px; height: 16px; color: var(--accent); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <span id="session-user-display" style="font-weight: 600; font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {% if request.session.nombre %}
+                            {{ request.session.nombre }}
+                        {% else %}
+                            Invitado
+                        {% endif %}
+                    </span>
+                </button>
+            </a>
+        </div>
+
+        <ul class="nav-links">
+            <li id="menu-dashboard" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <a href="{% url 'dashboard' %}">
+                    <!-- Dashboard SVG Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            {% if request.session.rol == 'ADMINISTRADOR' %}
+            <li id="menu-creation" class="{% if request.resolver_match.url_name == 'admin_config' %}active{% endif %}">
+                <a href="{% url 'admin_config' %}">
+                    <!-- Creation (Personal) SVG Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    <span>Personal y Horarios</span>
+                </a>
+            </li>
+            <li id="menu-admin" class="{% if request.resolver_match.url_name == 'asistencia_manual' %}active{% endif %}">
+                <a href="{% url 'asistencia_manual' %}">
+                    <!-- Admin (Spreadsheet) SVG Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Consola Admin</span>
+                </a>
+            </li>
+            {% endif %}
+            <li id="menu-qr" class="{% if request.resolver_match.url_name == 'asistencia_qr' %}active{% endif %}">
+                <a href="{% url 'asistencia_qr' %}">
+                    <!-- QR / Scan SVG Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M16 20h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Ingreso o Salida</span>
+                </a>
+            </li>
+            <li id="menu-requests" class="{% if request.resolver_match.url_name == 'asistencia_permisos' %}active{% endif %}">
+                <a href="{% url 'asistencia_permisos' %}">
+                    <!-- Requests Clipboard Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    <span>Permisos y Vacaciones</span>
+                </a>
+            </li>
+            <li id="menu-disciplinary" class="{% if request.resolver_match.url_name == 'rrhh_disciplinario' %}active{% endif %}">
+                <a href="{% url 'rrhh_disciplinario' %}">
+                    <!-- Disciplinary Scale Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                    <span>Actas Disciplinarias</span>
+                </a>
+            </li>
+            <li id="menu-payroll" class="{% if request.resolver_match.url_name == 'nomina_colillas' %}active{% endif %}">
+                <a href="{% url 'nomina_colillas' %}">
+                    <!-- Payroll Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Colillas de Pago</span>
+                </a>
+            </li>
+            <li id="menu-evaluations" class="{% if request.resolver_match.url_name == 'rrhh_evaluaciones' %}active{% endif %}">
+                <a href="{% url 'rrhh_evaluaciones' %}">
+                    <!-- Evaluations Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                    <span>Evaluación Desempeño</span>
+                </a>
+            </li>
+            <li id="menu-certificates" class="{% if request.resolver_match.url_name == 'rrhh_certificados' %}active{% endif %}">
+                <a href="{% url 'rrhh_certificados' %}">
+                    <!-- Certificate Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Constancias Laborales</span>
+                </a>
+            </li>
+            <li id="menu-documents" style="display: none;" class="{% if request.resolver_match.url_name == 'rrhh_documentos' %}active{% endif %}">
+                <a href="{% url 'rrhh_documentos' %}">
+                    <!-- Documents Icon -->
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Documentos Creados</span>
+                </a>
+            </li>
+
+        </ul>
+
+        <div class="sidebar-footer" style="padding: 16px; border-top: 1px solid var(--sidebar-border);">
+            <!-- Indicador de Dispositivo (Móvil/Desktop) -->
+            <div id="sidebarDeviceIndicator" style="display: none !important; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-md); margin-bottom: 12px;">
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Dispositivo</span>
+                <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px;">
+                    <span id="device-icon"></span>
+                    <span id="device-label">Detectando...</span>
+                </div>
+            </div>
+
+            <!-- On/Off Switch para el Modo Oscuro -->
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background-color: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: var(--radius-md);">
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Modo Oscuro</span>
+                <label class="switch-container">
+                    <input type="checkbox" id="theme-toggle-switch">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- CONTENT WRAPPER -->
+    <main>
+        <!-- HEADER (Fecha, Reloj y Simulación de Config) -->
+        <header style="height: auto; min-height: 90px; padding: 15px 40px; flex-wrap: wrap; gap: 15px; justify-content: space-between; align-items: center; display: flex;">
+            <div class="header-title" id="page-title-display">{% block page_title %}Dashboard Analítico{% endblock %}</div>
+            <div class="header-time-container" style="gap: 16px; flex-wrap: wrap; align-items: center; display: flex;">
+                <!-- IP Sede Widget -->
+                <div class="header-widget" style="display: none;">
+                    <span class="header-widget-label">IP Sede (Red)</span>
+                    <div class="header-widget-card">
+                        <!-- Network/IP Svg Icon -->
+                        <svg style="width: 14px; height: 14px; color: var(--accent); opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                        <input type="text" id="simulated-ip-input" value="192.168.1.25">
+                        <span id="ip-status-badge" class="badge badge-success" style="font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; line-height: 1;">Autorizada</span>
+                    </div>
+                </div>
+
+                <!-- Fecha Actual Widget -->
+                <div class="header-widget">
+                    <span class="header-widget-label">Fecha Actual</span>
+                    <div class="header-widget-card">
+                        <!-- Calendar Svg Icon -->
+                        <svg style="width: 14px; height: 14px; color: var(--accent); opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span id="live-date">Cargando fecha...</span>
+                    </div>
+                </div>
+
+                <!-- Hora Actual Widget -->
+                <div class="header-widget">
+                    <span class="header-widget-label">Hora Medellín (Col)</span>
+                    <div class="header-widget-card" style="font-weight: 700; font-size: 1rem; min-width: 130px; letter-spacing: 0.5px;">
+                        <!-- Clock Svg Icon -->
+                        <svg style="width: 14px; height: 14px; color: var(--accent); opacity: 0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span id="live-clock">00:00:00</span>
+                    </div>
+                </div>
+
+
+            </div>
+        </header>
+
+        <!-- CUERPO DE CONTENIDO SPA -->
+        <div class="content-body">
+
+            <!-- ================= MÓDULO 4: DASHBOARD (POR DEFECTO) ================= -->
+            <div id="htmx-content">
+{% block content %}
+            {% endblock %}
+    <!-- Bloque para Scripts Específicos del Módulo -->
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+        var a = document.querySelector('.nav-links a[href="' + window.location.pathname + '"]');
+        if (a) {
+            a.parentElement.classList.add('active');
+            if (window.innerWidth <= 992) {
+                var sidebar = document.querySelector('.sidebar');
+                if (sidebar) sidebar.classList.remove('active');
+            }
+        }
+    </script>
+</div>
+
+     <!-- Modal 1: Alerta de Llegada Tarde (Regla 3.1) -->
+     <div id="modal-tardiness" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+         <div class="glass-card" style="border: 2px solid var(--warning); max-width: 450px; width: 90%; text-align: center; padding: 30px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg);">
+             <div style="color: var(--warning); margin-bottom: 15px;">
+                 <svg style="width: 60px; height: 60px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+             </div>
+             <h3 style="font-weight: 700; margin-bottom: 10px; font-size: 1.25rem;">Llegada Tarde Registrada</h3>
+             <p id="modal-tardiness-msg" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">Se ha registrado un RETARDO en su marcación de ingreso.</p>
+             <button class="btn btn-primary" id="btn-close-tardiness" style="width: 100%;">Entendido</button>
+         </div>
+     </div>
+ 
+     <!-- Modal 2: Alerta Crítica de Reincidencia Semanal (Regla 3.2) -->
+     <div id="modal-critical" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2001; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+         <div class="glass-card" style="border: 2px solid var(--danger); max-width: 450px; width: 90%; text-align: center; padding: 30px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg);">
+             <div style="color: var(--danger); margin-bottom: 15px;">
+                 <svg style="width: 60px; height: 60px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+             </div>
+             <h3 style="font-weight: 700; color: var(--danger); margin-bottom: 10px; font-size: 1.25rem;">Alerta Crítica de Reincidencia</h3>
+             <p id="modal-critical-msg" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">Alerta Crítica: Ha alcanzado su tercer llegada tarde en la misma semana calendaría.</p>
+             <button class="btn btn-danger" id="btn-close-critical" style="width: 100%;">Aceptar Notificación</button>
+         </div>
+     </div>
+
+     <!-- Modal 3: Detalle del Documento Creado (Recibo Imprimible) -->
+     <div id="modal-document-detail" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2002; align-items:center; justify-content:center; backdrop-filter:blur(5px); padding: 20px;">
+         <div class="glass-card" style="max-width: 650px; width: 100%; padding: 25px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg); max-height: 90vh; overflow-y: auto;">
+             
+             <!-- Recibo/Documento -->
+             <div id="document-receipt-content" style="background-color:#ffffff; color:#000000; padding: 30px; border: 1px solid #ccc; border-radius: 4px; font-family:'Courier New', monospace; font-size: 0.9rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                 <!-- Encabezado corporativo -->
+                 <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px;">
+                     <h2 style="font-weight: 700; margin: 0; font-size:1.3rem; letter-spacing:1px; color:#000;">ANTIGRAVITY</h2>
+                     <div style="font-size: 0.75rem; color: #555; margin-top: 5px;">SISTEMA DE ASISTENCIA Y TIEMPO</div>
+                     <div style="font-size: 0.75rem; color: #555;">NIT: 901.442.118-9 | MEDELLÍN, COLOMBIA</div>
+                 </div>
+                 
+                 <!-- Título del documento -->
+                 <div style="text-align: center; font-weight: 700; font-size: 1rem; margin-bottom: 20px; text-transform: uppercase;" id="doc-receipt-title">
+                     CONSTANCIA DE REGISTRO
+                 </div>
+
+                 <!-- Información del Documento -->
+                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; color: #000000;">
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700; width: 35%;">CÓDIGO DOC:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-id">DOC-000000</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">FECHA EMISIÓN:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-emision">2026-06-17</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">ESTADO ACTUAL:</td>
+                         <td style="padding: 4px 0; font-weight: 700;" id="doc-receipt-status">PENDIENTE</td>
+                     </tr>
+                 </table>
+
+                 <!-- Información del Colaborador -->
+                 <div style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase; color: #000000;">
+                     DATOS DEL COLABORADOR
+                 </div>
+                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; color: #000000;">
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700; width: 35%;">NOMBRE:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-colab-nombre">Juan Fernando Restrepo</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">CÉDULA:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-colab-cedula">10102020</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">CONTACTO:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-colab-contacto">3115556677</td>
+                     </tr>
+                 </table>
+
+                 <!-- Detalle de Solicitud -->
+                 <div style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase; color: #000000;">
+                     DETALLE DE LA SOLICITUD
+                 </div>
+                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; color: #000000;">
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700; width: 35%;">CATEGORÍA:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-category">Permiso</td>
+                     </tr>
+                     <tr id="doc-receipt-row-permiso">
+                         <td style="padding: 4px 0; font-weight: 700;">TIPO/DETALLE:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-permiso-detail">Médico</td>
+                     </tr>
+                     <tr id="doc-receipt-row-rango">
+                         <td style="padding: 4px 0; font-weight: 700;">PERIODO / HORAS:</td>
+                         <td style="padding: 4px 0;" id="doc-receipt-period">08:00 - 12:00</td>
+                     </tr>
+                     <tr>
+                         <td style="padding: 4px 0; font-weight: 700;">CANT. SOLICITADA:</td>
+                         <td style="padding: 4px 0; font-weight: 700; color: #000;" id="doc-receipt-total">4.0h</td>
+                     </tr>
+                 </table>
+
+                 <!-- Observaciones -->
+                 <div style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase; color: #000000;">
+                     OBSERVACIONES
+                 </div>
+                 <div style="font-size: 0.8rem; line-height: 1.5; margin-bottom: 30px; word-wrap: break-word; min-height: 40px; color: #000000;" id="doc-receipt-obs">
+                     Cita odontológica de control.
+                 </div>
+
+                 <!-- Firmas -->
+                 <table style="width: 100%; margin-top: 30px; font-size: 0.75rem; text-align: center; color: #000000;">
+                     <tr>
+                         <td style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">
+                             Firma del Colaborador
+                         </td>
+                         <td style="width: 10%;"></td>
+                         <td style="width: 45%; border-top: 1px solid #000; padding-top: 5px;">
+                             Autorización / Administración
+                         </td>
+                     </tr>
+                 </table>
+             </div>
+
+             <!-- Controles del Modal -->
+             <div style="display: flex; gap: 10px; margin-top: 20px;">
+                 <button class="btn btn-secondary" id="btn-close-doc-detail" style="flex-grow: 1;">Cerrar</button>
+                 <button class="btn btn-primary" id="btn-print-doc" style="flex-grow: 1;">Imprimir / Guardar PDF</button>
+             </div>
+
+         </div>
+     </div>
+
+     <!-- Modal 4: Inicio de Sesión / Selección de Rol (Login) -->
+     <div id="modal-login-session" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2003; align-items:center; justify-content:center; backdrop-filter:blur(5px); padding: 20px;">
+         <div class="glass-card" style="max-width: 450px; width: 100%; padding: 30px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg); text-align: center;">
+             <div style="color: var(--accent); margin-bottom: 15px; display: flex; justify-content: center;">
+                 <svg style="width: 50px; height: 50px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+             </div>
+             <h3 style="font-weight: 700; margin-bottom: 8px; font-size: 1.25rem; color: var(--text-primary);">Control de Acceso / Sesión</h3>
+             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                 Seleccione el perfil de usuario con el que desea interactuar en el sistema:
+             </p>
+
+             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                 <label for="login-user-select" style="font-weight: 600; margin-bottom: 6px; display: block; font-size: 0.8rem; color: var(--text-secondary);">Seleccionar Usuario</label>
+                 <select id="login-user-select" style="width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none; font-size: 0.9rem;">
+                     <option value="ADMINISTRADOR">Administrador Global (Sistema)</option>
+                     <optgroup label="Jefes Inmediatos (Admin)" id="login-group-jefes">
+                         <!-- Poblado dinámicamente -->
+                     </optgroup>
+                     <optgroup label="Colaboradores" id="login-group-colabs">
+                         <!-- Poblado dinámicamente -->
+                     </optgroup>
+                 </select>
+             </div>
+
+             <div class="form-group" id="login-password-container" style="text-align: left; margin-bottom: 20px; display: none;">
+                 <label for="login-password-input" style="font-weight: 600; margin-bottom: 6px; display: block; font-size: 0.8rem; color: var(--text-secondary);">Contraseña de Acceso <span style="color: var(--danger);">*</span></label>
+                 <input type="password" id="login-password-input" placeholder="Ingrese su contraseña" style="width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none; font-size: 0.9rem;">
+             </div>
+
+             <div style="display: flex; gap: 10px; width: 100%;">
+                 <button class="btn btn-secondary" id="btn-close-login" style="flex-grow: 1; height: 42px;">Cancelar</button>
+                 <button class="btn btn-primary" id="btn-submit-login" style="flex-grow: 1; font-weight: 600; height: 42px;">Iniciar Sesión</button>
+             </div>
+         </div>
+     </div>
+
+     <!-- Modal 5: Importar Acta Disciplinaria Física (Scanned) -->
+     <div id="modal-import-acta" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:2003; align-items:center; justify-content:center; backdrop-filter:blur(5px); padding: 20px;">
+         <div class="glass-card" style="max-width: 500px; width: 100%; padding: 30px; animation: slideIn 0.3s ease-out; background-color:var(--sidebar-bg); text-align: left;">
+             <h3 style="font-weight: 700; margin-bottom: 15px; font-size: 1.25rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                 <svg style="width: 24px; height: 24px; color: var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                 Importar Acta Disciplinaria Física
+             </h3>
+             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                 Registre los datos del colaborador y cargue la imagen digitalizada del acta física.
+             </p>
+
+             <form id="form-import-acta">
+                 <div class="form-group" style="margin-bottom: 16px;">
+                     <label for="import-acta-colab" style="font-weight: 600; margin-bottom: 6px; display: block;">Seleccionar Colaborador <span style="color: var(--danger);">*</span></label>
+                     <select id="import-acta-colab" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                         <!-- Poblado dinámicamente -->
+                     </select>
+                 </div>
+
+                 <div class="form-group" style="margin-bottom: 16px;">
+                     <label for="import-acta-fecha" style="font-weight: 600; margin-bottom: 6px; display: block;">Fecha de Emisión <span style="color: var(--danger);">*</span></label>
+                     <input type="date" id="import-acta-fecha" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                 </div>
+
+                 <div class="form-group" style="margin-bottom: 16px;">
+                     <label for="import-acta-falta" style="font-weight: 600; margin-bottom: 6px; display: block;">Tipo de Falta <span style="color: var(--danger);">*</span></label>
+                     <select id="import-acta-falta" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                         <option value="LEVE">Leve</option>
+                         <option value="GRAVE">Grave</option>
+                         <option value="MUY_GRAVE">Muy Grave</option>
+                     </select>
+                 </div>
+
+                 <div class="form-group" style="margin-bottom: 24px;">
+                     <label for="import-acta-file" style="font-weight: 600; margin-bottom: 6px; display: block;">Imagen del Acta Firmada (JPG/PNG) <span style="color: var(--danger);">*</span></label>
+                     <input type="file" id="import-acta-file" accept="image/*" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background-color: var(--bg-primary); color: var(--text-primary); outline: none;" required>
+                 </div>
+
+                 <div style="display: flex; gap: 10px; width: 100%;">
+                     <button type="button" class="btn btn-secondary" id="btn-close-import" style="flex-grow: 1; height: 42px;">Cancelar</button>
+                     <button type="submit" class="btn btn-primary" style="flex-grow: 1; font-weight: 600; height: 42px;">Guardar e Importar</button>
+                 </div>
+             </form>
+         </div>
+     </div>
+
+     <!-- Modal para Visor de Fotos de Registro -->
+    <div id="modal-ver-foto" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);">
+        <div class="modal-content" style="background-color: var(--card-bg); margin: 5% auto; padding: 20px; border: 1px solid var(--card-border); width: 90%; max-width: 400px; border-radius: var(--radius-md); position: relative; text-align: center;">
+            <span class="close-modal" onclick="document.getElementById('modal-ver-foto').style.display='none'" style="position: absolute; top: 10px; right: 20px; color: var(--text-secondary); font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3 style="margin-bottom: 15px; color: var(--text-primary);">Captura Facial</h3>
+            <img id="visor-foto-img" src="" alt="Captura Facial" style="width: 100%; max-width: 320px; border-radius: var(--radius-sm); border: 2px solid var(--sidebar-border); box-shadow: var(--shadow-md);">
+            <div id="visor-foto-info" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary);"></div>
+        </div>
+    </div>
+ 
+ 
+    
+
+</body>
+</html>

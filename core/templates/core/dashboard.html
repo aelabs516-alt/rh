@@ -1,0 +1,328 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+<section id="view-dashboard" class="page active">
+                <!-- Alerta de Actas Pendientes para Colaborador -->
+                {% if actas_pendientes > 0 %}
+<div id="dashboard-disciplinary-alert" class="glass-card" style="display: block;
+{% else %}
+<div id="dashboard-disciplinary-alert" class="glass-card" style="display: none;
+{% endif %} border: 2px solid var(--danger); background-color: var(--danger-light); margin-bottom: 24px; padding: 15px 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 12px; color: var(--danger);">
+                            <svg style="width: 32px; height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h4 style="font-weight: 700; font-size: 0.95rem;">Tiene {{ actas_pendientes }} acta(s) disciplinaria(s) pendiente(s) por firmar</h4>
+                                <p style="font-size: 0.8rem; margin-top: 2px; color: var(--text-primary);">El sistema ha generado llamados de atención por retardos acumulados. Debe ingresar descargos y firmar.</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'rrhh_disciplinario' %}" class="btn btn-danger" style="font-size: 0.8rem; padding: 8px 16px; font-weight: 600; text-decoration: none; text-align: center;">Ir a Firmar Actas</a>
+                    </div>
+                </div>
+
+                <!-- Filtros Globales -->
+                <div class="glass-card" style="margin-bottom: 24px;">
+                    <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 0; align-items: flex-end;">
+                        <div class="form-group">
+                            <label for="filter-year">Filtrar Año</label>
+                            <select id="filter-year">
+                                <option value="2026" selected>2026</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-month">Filtrar Mes</label>
+                            <select id="filter-month">
+                                <option value="all">Todos los Meses</option>
+                                <option value="0">Enero</option>
+                                <option value="1">Febrero</option>
+                                <option value="2">Marzo</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Mayo</option>
+                                <option value="5" selected>Junio</option>
+                                <option value="6">Julio</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Septiembre</option>
+                                <option value="9">Octubre</option>
+                                <option value="10">Noviembre</option>
+                                <option value="11">Diciembre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-day">Filtrar Día Específico</label>
+                            <input type="date" id="filter-day">
+                        </div>
+                        {% if request.session.rol == 'ADMINISTRADOR' %}
+                        <div class="form-group" id="filter-colaborador-container">
+                            <label for="filter-colaborador">Colaborador</label>
+                            <select id="filter-colaborador">
+                                <option value="all" selected>Todos los Empleados</option>
+                                <!-- Cargado dinámicamente -->
+                            </select>
+                        </div>
+                        {% endif %}
+                        <div class="form-group">
+                            <button class="btn btn-secondary" id="btn-reset-filters" style="width:100%; height:45px;">
+                                Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Métricas Principales -->
+                <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 30px; gap: 15px;">
+                    <!-- Tarjeta Horas Totales -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 12px; border-left: 5px solid var(--accent); padding: 15px;">
+                        <div style="background-color: var(--accent-light); padding:12px; border-radius: var(--radius-md); color: var(--accent); flex-shrink: 0;">
+                            <svg style="width:28px; height:28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Horas Normales</div>
+                            <div style="font-size:1.5rem; font-weight:700; color:var(--text-primary);" id="metric-normal-hours">{{ horas_normales }}h</div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Horas Extras -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 12px; border-left: 5px solid var(--success); padding: 15px;">
+                        <div style="background-color: var(--success-light); padding:12px; border-radius: var(--radius-md); color: var(--success); flex-shrink: 0;">
+                            <svg style="width:28px; height:28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Horas Extras</div>
+                            <div style="font-size:1.5rem; font-weight:700; color:var(--text-primary);" id="metric-extra-hours">{{ horas_extras }}h</div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Horas Permiso / Ausencia -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 12px; border-left: 5px solid var(--warning); padding: 15px;">
+                        <div style="background-color: var(--warning-light); padding:12px; border-radius: var(--radius-md); color: var(--warning); flex-shrink: 0;">
+                            <svg style="width:28px; height:28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Horas de Permiso</div>
+                            <div style="font-size:1.5rem; font-weight:700; color:var(--text-primary);" id="metric-permisos-hours">0.0h</div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Balance Horario (Saldo Neto) -->
+                    <div class="glass-card" id="metric-balance-card" style="margin-bottom:0; display:flex; align-items:center; gap: 12px; border-left: 5px solid var(--accent); transition: var(--transition); padding: 15px;">
+                        <div id="metric-balance-icon-container" style="background-color: var(--accent-light); padding:12px; border-radius: var(--radius-md); color: var(--accent); flex-shrink: 0;">
+                            <svg style="width:28px; height:28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="metric-balance-label">Balance Horario</div>
+                            <div style="font-size:1.4rem; font-weight:700; color:var(--text-primary);" id="metric-balance-hours">0.0h</div>
+                            <small id="metric-balance-subtext" style="font-size:0.6rem; font-weight:600; color:var(--text-secondary); display:block; margin-top:2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sin Novedad</small>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Llegadas Tarde (Contador) -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 12px; border-left: 5px solid var(--danger); padding: 15px;">
+                        <div style="background-color: var(--danger-light); padding:12px; border-radius: var(--radius-md); color: var(--danger); flex-shrink: 0;">
+                            <svg style="width:28px; height:28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Llegadas Tarde</div>
+                            <div style="font-size:1.5rem; font-weight:700; color:var(--text-primary);" id="metric-retardos-count">0</div>
+                            <small style="font-size:0.6rem; font-weight:600; color:var(--text-secondary); display:block; margin-top:2px;">Retardos en periodo</small>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Widget Disciplinario -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 12px; border-left: 5px solid #8b5cf6; padding: 15px;">
+                        <div style="background-color: #f3e8ff; padding:12px; border-radius: var(--radius-md); color: #8b5cf6; flex-shrink: 0;">
+                            <svg style="width:28px; height:28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div style="font-size:0.7rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Actas Disciplinarias</div>
+                            <div style="display:flex; gap: 8px; margin-top: 4px;">
+                                <div>
+                                    <span style="font-size:1.2rem; font-weight:700; color:var(--success);" id="metric-actas-concluidas">0</span>
+                                    <small style="font-size:0.6rem; color:var(--text-secondary); display:block;">Firmadas</small>
+                                </div>
+                                <div style="border-left: 1px solid var(--card-border); padding-left: 8px;">
+                                    <span style="font-size:1.2rem; font-weight:700; color:var(--warning);" id="metric-actas-pendientes">0</span>
+                                    <small style="font-size:0.6rem; color:var(--text-secondary); display:block;">Pendientes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Desempeño Promedio -->
+                    <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; gap: 12px; border-left: 5px solid #d946ef; padding: 15px;">
+                        <div style="background-color: #fdf2ff; padding:12px; border-radius: var(--radius-md); color: #d946ef; flex-shrink: 0;">
+                            <svg style="width:28px; height:28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.246.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.907a1 1 0 00.95-.69l1.519-4.674z"></path></svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Evaluación Desempeño</div>
+                            <div style="font-size:1.5rem; font-weight:700; color:var(--text-primary);" id="metric-performance-score">N/A</div>
+                            <small style="font-size:0.6rem; font-weight:600; color:var(--text-secondary); display:block; margin-top:2px;">Promedio ciclo</small>
+                        </div>
+                    </div>
+                </div>                <!-- Gráficos Analíticos -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;" class="dashboard-charts-grid">
+                    <!-- 1. Horas Extras por Colaborador -->
+                    <div class="glass-card" style="margin-bottom:0; min-height: 350px;">
+                        <div class="card-title">Horas Extras por Colaborador</div>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="chart-horas-extras"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 2. Días de Vacaciones Acumulados por Colaborador -->
+                    <div class="glass-card" style="margin-bottom:0; min-height: 350px;">
+                        <div class="card-title">Vacaciones Acumuladas por Colaborador</div>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="chart-vacaciones-acumuladas"></canvas>
+                        </div>
+                        <script id="vacaciones-admin-data" type="application/json">
+                            {{ vacaciones_admin_json|safe }}
+                        </script>
+                    </div>
+
+                    <!-- 3. Actas Disciplinarias por Colaborador -->
+                    <div class="glass-card" style="margin-bottom:0; min-height: 350px;">
+                        <div class="card-title">Actas Disciplinarias por Colaborador</div>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="chart-actas-totales"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 4. Actas Disciplinarias Pendientes por Firmar -->
+                    <div class="glass-card" style="margin-bottom:0; min-height: 350px;">
+                        <div class="card-title">Actas Disciplinarias Pendientes por Firmar</div>
+                        <div style="position: relative; height: 300px; width: 100%; display:flex; justify-content:center;">
+                            <canvas id="chart-actas-pendientes"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+
+                {% if request.session.rol == 'COLABORADOR' %}
+                <!-- Gráfica de Vacaciones para Colaborador -->
+                <div class="glass-card" style="margin-top: 30px; margin-bottom: 30px;">
+                    <div class="card-title">Resumen de Vacaciones Acumuladas</div>
+                    <div style="display: flex; gap: 30px; align-items: center; justify-content: center; flex-wrap: wrap;">
+                        <div style="position: relative; height: 260px; width: 260px;">
+                            <canvas id="chart-vacaciones"></canvas>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; min-width: 200px;">
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Días Ganados (Histórico)</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);" id="vac-ganados" data-value="{{ vacaciones_dias_ganados }}">{{ vacaciones_dias_ganados }}</div>
+                            </div>
+                            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; border-left: 4px solid var(--warning);">
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Días Disfrutados</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);" id="vac-usados" data-value="{{ vacaciones_dias_usados }}">{{ vacaciones_dias_usados }}</div>
+                            </div>
+                            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; border-left: 4px solid var(--success);">
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Días Disponibles</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--success);" id="vac-disponibles" data-value="{{ vacaciones_dias_disponibles }}">{{ vacaciones_dias_disponibles }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+
+            </section>
+
+
+            <!-- ================= MÓDULO 1: CREACIÓN (PERSONAL Y TURNOS) ================= -->
+            
+{% block extra_js %}
+<script>
+    window.DJANGO_REGISTROS_DATA = {{ registros_json|safe }};
+    window.DJANGO_COLABORADORES_DATA = {{ colaboradores_json|safe }};
+    window.DJANGO_ACTAS_DATA = {{ actas_json|safe }};
+    window.DJANGO_EVALUACIONES_DATA = {{ evaluaciones_json|safe }};
+    
+    // Override db.js getters for Dashboard use
+    window.obtenerRegistros = function() {
+        return window.DJANGO_REGISTROS_DATA || [];
+    };
+    window.obtenerColaboradores = function() {
+        return window.DJANGO_COLABORADORES_DATA || [];
+    };
+    window.obtenerColaboradorPorCedula = function(cedula) {
+        return window.obtenerColaboradores().find(c => c.cedula == cedula);
+    };
+    window.obtenerActas = function() {
+        return window.DJANGO_ACTAS_DATA || [];
+    };
+    window.obtenerEvaluaciones = function() {
+        return window.DJANGO_EVALUACIONES_DATA || [];
+    };
+    window.obtenerConfiguracion = function() {
+        return {
+            sesion_activa: {
+                rol: "{{ request.session.rol }}",
+                cedula: {{ request.session.cedula|default:"null" }}
+            }
+        };
+    };
+</script>
+<script src="{% static 'js/dashboard.js' %}?v=14"></script>
+<script>
+function initDashboardModule() {
+    {% if request.session.rol == 'COLABORADOR' %}
+    const ctxVac = document.getElementById('chart-vacaciones');
+    if (ctxVac) {
+        const usados = parseInt(document.getElementById('vac-usados').dataset.value) || 0;
+        const disponibles = parseInt(document.getElementById('vac-disponibles').dataset.value) || 0;
+
+        const esOscuro = document.body.classList.contains('dark-mode');
+
+        new Chart(ctxVac, {
+            type: 'doughnut',
+            data: {
+                labels: ['Días Disfrutados', 'Días Disponibles'],
+                datasets: [{
+                    data: [usados, disponibles],
+                    backgroundColor: [
+                        esOscuro ? 'rgba(245, 158, 11, 0.85)' : '#f59e0b',
+                        esOscuro ? 'rgba(16, 185, 129, 0.85)' : '#10b981'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: esOscuro ? '#94a3b8' : '#64748b',
+                            font: { family: 'Poppins' }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+
+    {% if request.session.rol == 'ADMINISTRADOR' %}
+    // El gráfico de vacaciones-admin ahora se renderiza desde dashboard.js
+    {% endif %}
+    
+    // Inicializar el módulo de dashboard
+    if (typeof inicializarDashboard === 'function') {
+        inicializarDashboard();
+    }
+}
+
+(function waitForDashboard() {
+    if (typeof inicializarDashboard === 'function') {
+        initDashboardModule();
+    } else {
+        setTimeout(waitForDashboard, 50);
+    }
+})();
+</script>
+{% endblock extra_js %}
+{% endblock %}

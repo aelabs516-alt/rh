@@ -1,0 +1,243 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block page_title %}Consola Admin (Marcaciones){% endblock %}
+{% block content %}
+<section id="view-admin" class="page">
+                
+                <!-- Ingreso Manual de Marcación -->
+                <div class="glass-card">
+                    <div class="card-title" id="registro-form-title">
+                        <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        <span>Registrar Marcación Manual (Administrador)</span>
+                    </div>
+                    
+                    <form id="form-registro-manual">
+                    {% csrf_token %}
+                        <input type="hidden" id="edit-registro-id" value="">
+                        
+                        <!-- Selectores de Modo de Registro -->
+                        <div style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--sidebar-border); padding-bottom: 15px;">
+                            <button type="button" class="btn btn-primary" id="btn-mode-individual" style="padding: 8px 16px; font-size: 0.8rem;">Registro Individual</button>
+                            <button type="button" class="btn btn-secondary" id="btn-mode-masivo" style="padding: 8px 16px; font-size: 0.8rem;">Registro Simultáneo (Masivo)</button>
+                        </div>
+
+                        <!-- 1. Campos de Entrada del Modo Individual -->
+                        <div id="individual-form-grid" class="form-grid">
+                            <div class="form-group">
+                                <label for="reg-colaborador">Colaborador</label>
+                                <select id="reg-colaborador">
+                                    <option value="" disabled selected>Seleccione un colaborador...</option>
+                                    {% for colab in colaboradores %}
+                                        <option value="{{ colab.cedula }}">{{ colab.nombre }} ({{ colab.cedula }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-fecha">Fecha del Registro</label>
+                                <input type="date" id="reg-fecha">
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-ingreso">Hora de Ingreso (HH:MM)</label>
+                                <input type="time" id="reg-ingreso">
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-salida">Hora de Salida (HH:MM)</label>
+                                <input type="time" id="reg-salida">
+                            </div>
+                        </div>
+
+                        <!-- 2. Panel de Cálculos en Vivo - Modo Individual -->
+                        <div id="individual-live-panel" style="background-color: var(--bg-secondary); border:1px solid var(--card-border); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap: 16px;">
+                            <div style="text-align:center;">
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); display:block; text-transform:uppercase;">Turno del Colaborador</span>
+                                <span id="calc-live-turno" style="font-weight:700; color:var(--text-primary); font-size:1.1rem;">-</span>
+                            </div>
+                            <div style="text-align:center;">
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); display:block; text-transform:uppercase;">Horas Normales</span>
+                                <span id="calc-live-normales" style="font-weight:700; color:var(--accent); font-size:1.25rem;">0.0h</span>
+                            </div>
+                            <div style="text-align:center;">
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); display:block; text-transform:uppercase;">Horas Extras</span>
+                                <span id="calc-live-extras" style="font-weight:700; color:var(--success); font-size:1.25rem;">0.0h</span>
+                            </div>
+                            <div style="text-align:center;">
+                                <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); display:block; text-transform:uppercase;">Permisos / Ausencias</span>
+                                <span id="calc-live-permisos" style="font-weight:700; color:var(--warning); font-size:1.25rem;">0.0h</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Observaciones - Modo Individual -->
+                        <div id="individual-obs-group" class="form-group full-width" style="margin-bottom: 20px;">
+                            <label for="reg-tipo-permiso" id="lbl-reg-tipo-permiso">Observaciones / Motivo de Permiso</label>
+                            <select id="reg-tipo-permiso" style="margin-bottom: 10px;">
+                                <option value="">Ninguno / Registro Normal</option>
+                                <optgroup label="Permisos Remunerados">
+                                    <option value="Citas Medicas">Citas Médicas</option>
+                                    <option value="Calamidad Domestica">Calamidad Doméstica</option>
+                                    <option value="Votacion y Jurado">Votación y Jurado</option>
+                                    <option value="Obligaciones Escolares">Obligaciones Escolares</option>
+                                    <option value="Diligencias Judiciales">Diligencias Judiciales</option>
+                                    <option value="Incapacidad Enfermedad General">Incapacidad Enfermedad General</option>
+                                    <option value="Incapacidad Laboral">Incapacidad Laboral</option>
+                                </optgroup>
+                                <optgroup label="Permisos No Remunerados">
+                                    <option value="Otros">Otros (Especifique)</option>
+                                </optgroup>
+                            </select>
+                            
+                            <div id="reg-incapacidad-container" style="display: none; margin-bottom: 10px; align-items: center; gap: 8px; background-color: var(--warning-light); padding: 8px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--warning);">
+                                <input type="checkbox" id="reg-incapacidad-presentada" style="width: 16px; height: 16px; cursor: pointer;">
+                                <label for="reg-incapacidad-presentada" style="font-weight: 600; font-size: 0.85rem; cursor: pointer; color: var(--warning);">¿Presenta soporte de incapacidad?</label>
+                            </div>
+
+                            <div id="reg-observaciones-container" style="display: none;">
+                                <textarea id="reg-observaciones" rows="2" placeholder="Especifique el motivo de la desviación..."></textarea>
+                            </div>
+                            <small id="reg-warning-obs" style="color: var(--danger); font-weight:600; display:none; margin-top: 4px;">⚠️ Observación obligatoria: se detectó una desviación de horas extras o permisos.</small>
+                        </div>
+
+                        <!-- 4. Contenedor de Entrada Masivo / Simultáneo -->
+                        <div id="masivo-form-grid" style="display: none; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                            <div class="form-group" style="width: 250px; margin-bottom: 10px;">
+                                <label for="reg-fecha-masivo">Fecha del Registro Masivo</label>
+                                <input type="date" id="reg-fecha-masivo">
+                            </div>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Colaborador</th>
+                                            <th>Turno del Día</th>
+                                            <th style="width: 140px;">Hora Ingreso</th>
+                                            <th style="width: 140px;">Hora Salida</th>
+                                            <th>Horas Calculadas</th>
+                                            <th>Observaciones / Justificación</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-masivo-body">
+                                        <!-- Filas de colaboradores inyectadas dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary" id="btn-cancel-registro" style="display:none;">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" id="btn-submit-registro">Guardar Registro</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabla Hoja de Cálculo (Verificación y Control) -->
+                <div class="glass-card" style="margin-bottom: 0;">
+                    <div class="card-title">Consola de Control de Tiempos (Hoja de Cálculo)</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Colaborador (Cédula)</th>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Ingreso</th>
+                                    <th>Salida</th>
+                                    <th>Horas Normales</th>
+                                    <th>Horas Extras</th>
+                                    <th>Horas Permiso</th>
+                                    <th>IP Registro</th>
+                                    <th>Observaciones</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-registros-body">
+                                
+                                {% for reg in registros %}
+                                <tr>
+                                    <td>{{ reg.colaborador.nombre }} ({{ reg.colaborador.cedula }})</td>
+                                    <td>{{ reg.fecha }}</td>
+                                    <td>Manual</td>
+                                    <td>{{ reg.hora_ingreso|default_if_none:"--" }}</td>
+                                    <td>{{ reg.hora_salida|default_if_none:"--" }}</td>
+                                    <td>{{ reg.horas_normales }}</td>
+                                    <td>{{ reg.horas_extras }}</td>
+                                    <td>0</td>
+                                    <td>{{ reg.ip_dispositivo|default_if_none:"--" }}</td>
+                                    <td>{{ reg.observaciones|default_if_none:"" }}</td>
+                                    <td>
+                                        <button class="btn btn-secondary btn-sm" onclick="alert('Pendiente')">Editar</button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="11" style="text-align: center;">No hay registros manuales</td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Configuración Anti-Fraude (IPs Autorizadas de la Sede) -->
+                <div class="glass-card" style="margin-top: 30px;">
+                    <div class="card-title" style="color: var(--accent);">
+                        <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span>Configuración Anti-Fraude (IPs Autorizadas de la Sede)</span>
+                    </div>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px;">
+                        Defina las direcciones IP autorizadas desde las cuales los colaboradores pueden realizar marcaciones en el auto-servicio.
+                    </p>
+                    <div id="authorized-ips-container" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+                        <!-- Cargados dinámicamente -->
+                    </div>
+                    <div style="display:flex; gap:8px; max-width: 400px;">
+                        <input type="text" id="input-new-authorized-ip" placeholder="Ej: 192.168.1.10" style="padding: 8px 12px; font-size:0.85rem; flex-grow: 1;">
+                        <button class="btn btn-primary" id="btn-add-authorized-ip" style="padding: 8px 14px;">Añadir IP</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ================= MÓDULO 5: GESTIÓN DE ACTAS DISCIPLINARIAS ================= -->
+            
+            <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const formManual = document.getElementById('form-registro-manual');
+                if (formManual) {
+                    formManual.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const payload = {
+                            accion: 'registrar_manual',
+                            cedula: document.getElementById('reg-colaborador').value,
+                            fecha: document.getElementById('reg-fecha').value,
+                            hora_ingreso: document.getElementById('reg-ingreso').value,
+                            hora_salida: document.getElementById('reg-salida').value,
+                            observaciones: document.getElementById('reg-observaciones').value
+                        };
+                        try {
+                            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+                            const response = await fetch('{% url "asistencia_manual" %}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': csrfToken,'Content-Type': 'application/json'},
+                                body: JSON.stringify(payload)
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                alert(result.message);
+                                window.location.reload();
+                            } else {
+                                alert('Error: ' + result.message);
+                            }
+                        } catch (error) {
+                            alert('Error de red: ' + error);
+                        }
+                    });
+                }
+            });
+            </script>
+
+
+{% block extra_js %}
+<script src="{% static 'js/admin.js' %}?v=4"></script>
+{% endblock extra_js %}
+{% endblock %}
