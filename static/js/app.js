@@ -1,29 +1,39 @@
 // js/app.js
 // Controlador central de navegación SPA, reloj, tema e inicialización de la app
 
-document.addEventListener('turbo:load', () => {
+function initApp() {
+    // Evitar inicialización doble en la misma carga de página
+    if (document.body.getAttribute('data-app-initialized') === 'true') {
+        // En una navegación de Turbo, el body cambia, así que esto se reseteará y se ejecutará de nuevo.
+        return;
+    }
+    document.body.setAttribute('data-app-initialized', 'true');
+
     // 1. Reloj y Fecha Dinámicos (Bogotá/Medellín)
     iniciarRelojYFecha();
 
     // 2. Control de Tema Claro/Oscuro
     iniciarTema();
 
-    // 3. Enrutador SPA (Eliminado para usar el enrutamiento real de Django)
-    // iniciarEnrutador();
-
     // 4. Simulador de IP de Red
     iniciarSimuladorIP();
 
-    // 5. Simulador de Sesión / Roles (RBAC) (Eliminado para usar las sesiones reales de Django)
-    // iniciarSesionSimulada();
-
     // 6. Detección de Dispositivo
     identificarDispositivo();
-    window.addEventListener('resize', identificarDispositivo);
-
+    
     // 7. Auto-ocultar nav en scroll (Mobile)
     iniciarAutoOcultarNav();
-});
+}
+
+document.addEventListener('turbo:load', initApp);
+document.addEventListener('DOMContentLoaded', initApp);
+
+// Si el DOM ya está listo (por caché o porque el script cargó tarde)
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initApp();
+}
+
+window.addEventListener('resize', identificarDispositivo);
 
 // --- DETECCIÓN DE DISPOSITIVO ---
 function identificarDispositivo() {
@@ -75,7 +85,8 @@ function iniciarRelojYFecha() {
         };
         
         // Formatear usando locale es-CO
-        const partesFecha = ahora.toLocaleDateString('es-CO', opcionesFecha).split(' de ');
+        const fechaStr = ahora.toLocaleDateString('es-CO', opcionesFecha);
+        const partesFecha = fechaStr.split(' de ');
         // partesFecha[0] = día, partesFecha[1] = mes, partesFecha[2] = año
         if (dateEl && partesFecha.length >= 3) {
             const dia = partesFecha[0];
@@ -83,8 +94,8 @@ function iniciarRelojYFecha() {
             const anio = partesFecha[2];
             dateEl.textContent = `${dia} ${mes} ${anio}`;
         } else if (dateEl) {
-            // Respuesto en caso de formato alterno
-            dateEl.textContent = ahora.toLocaleDateString('es-CO', { timeZone: 'America/Bogota', day: 'numeric', month: 'long', year: 'numeric' });
+            // Respuesto en caso de formato alterno (fallback seguro)
+            dateEl.textContent = fechaStr.replace(/ de /g, ' ');
         }
     }
 
